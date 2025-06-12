@@ -1,0 +1,140 @@
+// Test 1: Simple class with attribute and constructor
+class Person {
+    public
+    attribute integer age;
+    constructor() {
+        local integer defaultAge;
+        defaultAge := 18;
+        age := defaultAge;
+    };
+};
+
+###
+
+// Test 2: Function with multiple parameters and return type
+func multiply(int x, int y) => integer {
+    return(x * y);
+};
+
+###
+
+// Test 3: Implementation block with function
+implement Person {
+    func setAge(integer newAge) => void {
+        age := newAge;
+    };
+};
+
+###
+
+// Test 4: If-else with nested if
+func check(int val) => void {
+    if (val > 0) then
+        if (val < 10) then
+            write(val);
+        else
+            write(0);
+    else
+        write(-1);
+};
+
+###
+
+// Test 5: While loop example
+func countdown(int start) => void {
+    while (start > 0) {
+        write(start);
+        start := start - 1;
+    };
+};
+
+###
+
+// Test 6: Attribute array declaration
+class DataHolder {
+    public
+    attribute float values[10];
+};
+
+###
+
+// Test 7: Function with no parameters and void return
+func sayHello() => void {
+    write(0);
+};
+
+###
+
+// Test 8: Logical operators in expression
+func testLogic(int a, int b) => integer {
+    if ((a > 0) and (b > 0)) then
+        return(1);
+    else
+        return(0);
+};
+
+###
+
+// Test 9: Nested function calls
+func calculate() => integer {
+    return(multiply(add(2, 3), 5));
+};
+
+###
+
+// Test 10: Using ‘self’ in class method
+class Counter {
+    private
+    attribute integer count;
+
+    public
+    func increment() => void {
+        count := count + 1;
+    };
+
+    func getCount() => integer {
+        return(count);
+    };
+};
+
+###
+
+// Test 11: Array indexing and assignment
+func arrayExample() => void {
+    var arr[5];
+    arr[0] := 10;
+    arr[1] := 20;
+};
+
+###
+
+// Test 12: Floating point literals and arithmetic
+func compute() => float {
+    local float pi;
+    pi := 3.1415;
+    return(pi * 2.0);
+};
+
+###
+
+// Test 13: Using ‘or’ and ‘not’
+func checkFlags(int flag1, int flag2) => integer {
+    if (not flag1 or flag2) then
+        return(1);
+    else
+        return(0);
+};
+
+###
+
+// Test 14: Function with empty parameter list
+func emptyParams() => void {
+    write(0);
+};
+
+###
+
+// Test 15: Complex expression with multiple operators
+func complexExpr(int a, int b, int c) => integer {
+    return(a + b * c - (a / b));
+};

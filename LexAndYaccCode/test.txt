@@ -1,0 +1,66 @@
+a := 5;
+###
+if (a < 10) then {
+    return (a + 1);
+}
+###
+x := 1;
+y := 2;
+z := x + y * 3;
+###
+return (x + y);
+###
+if (x == y) then {
+    return (0);
+} else {
+    return (1);
+}
+###
+while (a < 10) {
+    a := a + 1;
+}
+###
+b := 3.14;
+###
+not (x > y);
+###
+return (a >= 2 and b < 5);
+###
+for ((a + b) * c);
+###
+if (not 5 == 4) then {
+    write(1);
+} else {
+    write(0);
+}
+###
+class MyClass {
+    private attribute x : integer;
+    public func myFunc(a : integer) => integer {
+        if (a < 10) then {
+            return (a + 1);
+        } else {
+            return (a - 1);
+        }
+    }
+}
+###
+implement MyClass {
+    func anotherFunc(b : float) => void {
+        local y : float;
+        y := b * 2.0;
+        write(y);
+    }
+}
+###
+func main() => void {
+    local obj : MyClass;
+    obj := construct();
+    x := obj.myFunc(5);
+    write(x);
+}
+###
+x := 10;
+y := 5;
+return (not (x < y));
+###
