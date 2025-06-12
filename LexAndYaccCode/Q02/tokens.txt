@@ -1,0 +1,296 @@
+Token          	Type      	Location
+ID             	a         	Line: 1
+ASSIGN         	:=        	Line: 1
+INTLIT         	5         	Line: 1
+SEMICOLON      	;         	Line: 1
+DELIM          	###
+      	Line: 3
+IF             	if        	Line: 3
+LPAREN         	(         	Line: 3
+ID             	a         	Line: 3
+LT             	<         	Line: 3
+INTLIT         	10        	Line: 3
+RPAREN         	)         	Line: 3
+THEN           	then      	Line: 3
+LBRACE         	{         	Line: 3
+RETURN         	return    	Line: 4
+LPAREN         	(         	Line: 4
+ID             	a         	Line: 4
+PLUS           	+         	Line: 4
+INTLIT         	1         	Line: 4
+RPAREN         	)         	Line: 4
+SEMICOLON      	;         	Line: 4
+RBRACE         	}         	Line: 5
+DELIM          	###
+      	Line: 7
+ID             	x         	Line: 7
+ASSIGN         	:=        	Line: 7
+INTLIT         	1         	Line: 7
+SEMICOLON      	;         	Line: 7
+ID             	y         	Line: 8
+ASSIGN         	:=        	Line: 8
+INTLIT         	2         	Line: 8
+SEMICOLON      	;         	Line: 8
+ID             	z         	Line: 9
+ASSIGN         	:=        	Line: 9
+ID             	x         	Line: 9
+PLUS           	+         	Line: 9
+ID             	y         	Line: 9
+MULT           	*         	Line: 9
+INTLIT         	3         	Line: 9
+SEMICOLON      	;         	Line: 9
+DELIM          	###
+      	Line: 11
+RETURN         	return    	Line: 11
+LPAREN         	(         	Line: 11
+ID             	x         	Line: 11
+PLUS           	+         	Line: 11
+ID             	y         	Line: 11
+RPAREN         	)         	Line: 11
+SEMICOLON      	;         	Line: 11
+DELIM          	###
+      	Line: 13
+IF             	if        	Line: 13
+LPAREN         	(         	Line: 13
+ID             	x         	Line: 13
+EQ             	==        	Line: 13
+ID             	y         	Line: 13
+RPAREN         	)         	Line: 13
+THEN           	then      	Line: 13
+LBRACE         	{         	Line: 13
+RETURN         	return    	Line: 14
+LPAREN         	(         	Line: 14
+INTLIT         	0         	Line: 14
+RPAREN         	)         	Line: 14
+SEMICOLON      	;         	Line: 14
+RBRACE         	}         	Line: 15
+ELSE           	else      	Line: 15
+LBRACE         	{         	Line: 15
+RETURN         	return    	Line: 16
+LPAREN         	(         	Line: 16
+INTLIT         	1         	Line: 16
+RPAREN         	)         	Line: 16
+SEMICOLON      	;         	Line: 16
+RBRACE         	}         	Line: 17
+DELIM          	###
+      	Line: 19
+WHILE          	while     	Line: 19
+LPAREN         	(         	Line: 19
+ID             	a         	Line: 19
+LT             	<         	Line: 19
+INTLIT         	10        	Line: 19
+RPAREN         	)         	Line: 19
+LBRACE         	{         	Line: 19
+ID             	a         	Line: 20
+ASSIGN         	:=        	Line: 20
+ID             	a         	Line: 20
+PLUS           	+         	Line: 20
+INTLIT         	1         	Line: 20
+SEMICOLON      	;         	Line: 20
+RBRACE         	}         	Line: 21
+DELIM          	###
+      	Line: 23
+ID             	b         	Line: 23
+ASSIGN         	:=        	Line: 23
+FLOATLIT       	3.14      	Line: 23
+SEMICOLON      	;         	Line: 23
+DELIM          	###
+      	Line: 25
+NOT            	not       	Line: 25
+LPAREN         	(         	Line: 25
+ID             	x         	Line: 25
+GT             	>         	Line: 25
+ID             	y         	Line: 25
+RPAREN         	)         	Line: 25
+SEMICOLON      	;         	Line: 25
+DELIM          	###
+      	Line: 27
+RETURN         	return    	Line: 27
+LPAREN         	(         	Line: 27
+ID             	a         	Line: 27
+GTE            	>=        	Line: 27
+INTLIT         	2         	Line: 27
+AND            	and       	Line: 27
+ID             	b         	Line: 27
+LT             	<         	Line: 27
+INTLIT         	5         	Line: 27
+RPAREN         	)         	Line: 27
+SEMICOLON      	;         	Line: 27
+DELIM          	###
+      	Line: 29
+ID             	for       	Line: 29
+LPAREN         	(         	Line: 29
+LPAREN         	(         	Line: 29
+ID             	a         	Line: 29
+PLUS           	+         	Line: 29
+ID             	b         	Line: 29
+RPAREN         	)         	Line: 29
+MULT           	*         	Line: 29
+ID             	c         	Line: 29
+RPAREN         	)         	Line: 29
+SEMICOLON      	;         	Line: 29
+DELIM          	###
+      	Line: 31
+IF             	if        	Line: 31
+LPAREN         	(         	Line: 31
+NOT            	not       	Line: 31
+INTLIT         	5         	Line: 31
+EQ             	==        	Line: 31
+INTLIT         	4         	Line: 31
+RPAREN         	)         	Line: 31
+THEN           	then      	Line: 31
+LBRACE         	{         	Line: 31
+WRITE          	write     	Line: 32
+LPAREN         	(         	Line: 32
+INTLIT         	1         	Line: 32
+RPAREN         	)         	Line: 32
+SEMICOLON      	;         	Line: 32
+RBRACE         	}         	Line: 33
+ELSE           	else      	Line: 33
+LBRACE         	{         	Line: 33
+WRITE          	write     	Line: 34
+LPAREN         	(         	Line: 34
+INTLIT         	0         	Line: 34
+RPAREN         	)         	Line: 34
+SEMICOLON      	;         	Line: 34
+RBRACE         	}         	Line: 35
+DELIM          	###
+      	Line: 37
+CLASS          	class     	Line: 37
+ID             	MyClass   	Line: 37
+LBRACE         	{         	Line: 37
+PRIVATE        	private   	Line: 38
+ATTRIBUTE      	attribute 	Line: 38
+ID             	x         	Line: 38
+COLON          	:         	Line: 38
+INTEGER        	integer   	Line: 38
+SEMICOLON      	;         	Line: 38
+PUBLIC         	public    	Line: 39
+FUNC           	func      	Line: 39
+ID             	myFunc    	Line: 39
+LPAREN         	(         	Line: 39
+ID             	a         	Line: 39
+COLON          	:         	Line: 39
+INTEGER        	integer   	Line: 39
+RPAREN         	)         	Line: 39
+ARROW          	=>        	Line: 39
+INTEGER        	integer   	Line: 39
+LBRACE         	{         	Line: 39
+IF             	if        	Line: 40
+LPAREN         	(         	Line: 40
+ID             	a         	Line: 40
+LT             	<         	Line: 40
+INTLIT         	10        	Line: 40
+RPAREN         	)         	Line: 40
+THEN           	then      	Line: 40
+LBRACE         	{         	Line: 40
+RETURN         	return    	Line: 41
+LPAREN         	(         	Line: 41
+ID             	a         	Line: 41
+PLUS           	+         	Line: 41
+INTLIT         	1         	Line: 41
+RPAREN         	)         	Line: 41
+SEMICOLON      	;         	Line: 41
+RBRACE         	}         	Line: 42
+ELSE           	else      	Line: 42
+LBRACE         	{         	Line: 42
+RETURN         	return    	Line: 43
+LPAREN         	(         	Line: 43
+ID             	a         	Line: 43
+MINUS          	-         	Line: 43
+INTLIT         	1         	Line: 43
+RPAREN         	)         	Line: 43
+SEMICOLON      	;         	Line: 43
+RBRACE         	}         	Line: 44
+RBRACE         	}         	Line: 45
+RBRACE         	}         	Line: 46
+DELIM          	###
+      	Line: 48
+IMPLEMENT      	implement 	Line: 48
+ID             	MyClass   	Line: 48
+LBRACE         	{         	Line: 48
+FUNC           	func      	Line: 49
+ID             	anotherFunc	Line: 49
+LPAREN         	(         	Line: 49
+ID             	b         	Line: 49
+COLON          	:         	Line: 49
+FLOAT          	float     	Line: 49
+RPAREN         	)         	Line: 49
+ARROW          	=>        	Line: 49
+VOID           	void      	Line: 49
+LBRACE         	{         	Line: 49
+LOCAL          	local     	Line: 50
+ID             	y         	Line: 50
+COLON          	:         	Line: 50
+FLOAT          	float     	Line: 50
+SEMICOLON      	;         	Line: 50
+ID             	y         	Line: 51
+ASSIGN         	:=        	Line: 51
+ID             	b         	Line: 51
+MULT           	*         	Line: 51
+FLOATLIT       	2.0       	Line: 51
+SEMICOLON      	;         	Line: 51
+WRITE          	write     	Line: 52
+LPAREN         	(         	Line: 52
+ID             	y         	Line: 52
+RPAREN         	)         	Line: 52
+SEMICOLON      	;         	Line: 52
+RBRACE         	}         	Line: 53
+RBRACE         	}         	Line: 54
+DELIM          	###
+      	Line: 56
+FUNC           	func      	Line: 56
+ID             	main      	Line: 56
+LPAREN         	(         	Line: 56
+RPAREN         	)         	Line: 56
+ARROW          	=>        	Line: 56
+VOID           	void      	Line: 56
+LBRACE         	{         	Line: 56
+LOCAL          	local     	Line: 57
+ID             	obj       	Line: 57
+COLON          	:         	Line: 57
+ID             	MyClass   	Line: 57
+SEMICOLON      	;         	Line: 57
+ID             	obj       	Line: 58
+ASSIGN         	:=        	Line: 58
+ID             	construct 	Line: 58
+LPAREN         	(         	Line: 58
+RPAREN         	)         	Line: 58
+SEMICOLON      	;         	Line: 58
+ID             	x         	Line: 59
+ASSIGN         	:=        	Line: 59
+ID             	obj       	Line: 59
+DOT            	.         	Line: 59
+ID             	myFunc    	Line: 59
+LPAREN         	(         	Line: 59
+INTLIT         	5         	Line: 59
+RPAREN         	)         	Line: 59
+SEMICOLON      	;         	Line: 59
+WRITE          	write     	Line: 60
+LPAREN         	(         	Line: 60
+ID             	x         	Line: 60
+RPAREN         	)         	Line: 60
+SEMICOLON      	;         	Line: 60
+RBRACE         	}         	Line: 61
+DELIM          	###
+      	Line: 63
+ID             	x         	Line: 63
+ASSIGN         	:=        	Line: 63
+INTLIT         	10        	Line: 63
+SEMICOLON      	;         	Line: 63
+ID             	y         	Line: 64
+ASSIGN         	:=        	Line: 64
+INTLIT         	5         	Line: 64
+SEMICOLON      	;         	Line: 64
+RETURN         	return    	Line: 65
+LPAREN         	(         	Line: 65
+NOT            	not       	Line: 65
+LPAREN         	(         	Line: 65
+ID             	x         	Line: 65
+LT             	<         	Line: 65
+ID             	y         	Line: 65
+RPAREN         	)         	Line: 65
+RPAREN         	)         	Line: 65
+SEMICOLON      	;         	Line: 65
+DELIM          	###
+      	Line: 67
