@@ -1,0 +1,3 @@
+func callTest() => void {
+    sum(2, 3);
+}

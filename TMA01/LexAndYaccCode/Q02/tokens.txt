@@ -294,3 +294,13 @@ RPAREN         	)         	Line: 65
 SEMICOLON      	;         	Line: 65
 DELIM          	###
       	Line: 67
+ID             	x         	Line: 67
+ASSIGN         	:=        	Line: 67
+SEMICOLON      	;         	Line: 67
+DELIM          	###
+      	Line: 69
+WRITE          	write     	Line: 69
+LPAREN         	(         	Line: 69
+SEMICOLON      	;         	Line: 69
+DELIM          	###
+      	Line: 71

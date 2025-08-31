@@ -1,0 +1,3 @@
+func arrFunc(a: integer[10]) => void {
+    write(a[5]);
+}

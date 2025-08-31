@@ -1,0 +1,5 @@
+func loopTest(n: integer) => void {
+    while (n > 0) {
+        n := n - 1;
+    };
+}
