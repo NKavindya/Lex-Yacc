@@ -1,0 +1,5 @@
+implement A {
+    func f1(x: integer) => integer {
+        return(x);
+    }
+}

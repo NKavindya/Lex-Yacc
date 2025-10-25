@@ -1,0 +1,3 @@
+class B isa A, C {
+    public func g1(): void;
+};

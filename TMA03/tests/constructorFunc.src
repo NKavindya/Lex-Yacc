@@ -1,0 +1,4 @@
+constructor(x: integer) {
+    local y: integer;
+    y := x;
+}
