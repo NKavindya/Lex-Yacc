@@ -5,15 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern int current_line;
+extern int current_line; /* defined in parser.y */
 %}
 
 %option noyywrap
 
 %%
 
-[ \t]+            ;                 // skip spaces
-\n                { current_line++; } // count lines
+[ \t]+            ;                  /* skip whitespace */
+\n                { current_line++; } /* count lines */
 
 "class"           { return CLASS; }
 "implement"       { return IMPLEMENT; }
@@ -28,7 +28,7 @@ extern int current_line;
 "if"              { return IF; }
 "else"            { return ELSE; }
 "while"           { return WHILE; }
-"void"            { return VOID; }
+"void"            { yylval.sVal = strdup(yytext); return ID; } /* treat 'void' as ID for type rule */
 "self"            { return SELF; }
 "isa"             { return ISA; }
 "local"           { return LOCAL; }
@@ -45,6 +45,9 @@ extern int current_line;
 "or"              { return OR; }
 "not"             { return NOT; }
 
+"->"              { return ARROW; }
+"=>"              { return ARROW; }
+
 "+"               { return PLUS; }
 "-"               { return MINUS; }
 "*"               { return MULT; }
@@ -60,11 +63,9 @@ extern int current_line;
 ";"               { return SEMICOLON; }
 ":"               { return COLON; }
 "."               { return DOT; }
-"->"              { return ARROW; }
-"=>"              { return ARROW; }
 
-[0-9]+\.[0-9]+   { yylval.dVal = atof(yytext); return FLOAT_LIT; }
-0|[1-9][0-9]*    { yylval.iVal = atoi(yytext); return INT_LIT; }
+[0-9]+\.[0-9]+    { yylval.dVal = atof(yytext); return FLOAT_LIT; }
+0|[1-9][0-9]*     { yylval.iVal = atoi(yytext); return INT_LIT; }
 
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.sVal = strdup(yytext); return ID; }
 
