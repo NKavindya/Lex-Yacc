@@ -1,0 +1,29 @@
+func calculate(x : int, y : float) -> float {
+    local total : int;
+    local total : float;
+    result := x + y;
+    z := result * unknownVar;
+    a := "hello" - 5;
+    b := 3.14 / "pi";
+    c := x && y;
+    d := "text" || 10;
+    read(inputVar);
+    write(outputVar);
+    sum := total + "sum";
+    avg := total / "count";
+    temp := 5 + "val";
+    flag := 1 && "true";
+    result := calculate(5);
+    result := calculate(5, "hi", 10);
+    return(total);
+}
+
+func anotherFunc(p : int, q : int) -> int {
+    local p : float;
+    local r : int;
+    r := p + q;
+    s := r + unknown;
+    t := "str" * 3;
+    u := 7 / "seven";
+    return(r);
+}

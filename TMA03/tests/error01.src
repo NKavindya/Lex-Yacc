@@ -1,0 +1,9 @@
+func add(a : int, a : float) -> int {
+    local result : int;
+    local result : float;
+    result := a + b;
+    total := result + 10;
+    result := "hello" + 5;
+    output(result);
+    return(total);
+}

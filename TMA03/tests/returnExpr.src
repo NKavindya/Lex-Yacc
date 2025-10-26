@@ -1,3 +1,0 @@
-func square(x: integer) => integer {
-    return(x * x);
-}

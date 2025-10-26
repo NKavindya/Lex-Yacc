@@ -1,4 +1,0 @@
-func ioTest() => void {
-    read(a);
-    write(10);
-}

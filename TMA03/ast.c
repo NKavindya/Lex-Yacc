@@ -27,6 +27,11 @@ AST *ast_new_float(double val, int lineno) {
     return n;
 }
 
+AST *ast_new_string(const char *val, int lineno) {
+    AST *n = ast_new(NODE_STRING_LITERAL, strdup(val), lineno);
+    return n;
+}
+
 void ast_append_child(AST *parent, AST *child) {
     if (!parent) return;
     if (!parent->child) parent->child = child;
@@ -49,25 +54,85 @@ void ast_print(AST *node, int indent) {
     if (!node) return;
     print_indent(indent);
     switch (node->kind) {
-        case NODE_PROGRAM: printf("PROGRAM\n"); break;
-        case NODE_CLASS_DECL: printf("CLASS_DECL name=%s (line %d)\n", node->name?node->name:"", node->lineno); break;
-        case NODE_ATTRIBUTE: printf("ATTRIBUTE name=%s type=%s (line %d)\n", node->name?node->name:"", node->typeName?node->typeName:"", node->lineno); break;
-        case NODE_FUNC_DECL: printf("FUNC_DECL name=%s return=%s (line %d)\n", node->name?node->name:"", node->typeName?node->typeName:"", node->lineno); break;
-        case NODE_VAR_DECL: printf("VAR_DECL name=%s type=%s (line %d)\n", node->name?node->name:"", node->typeName?node->typeName:"", node->lineno); break;
-        case NODE_PARAM: printf("PARAM name=%s type=%s (line %d)\n", node->name?node->name:"", node->typeName?node->typeName:"", node->lineno); break;
-        case NODE_ASSIGN: printf("ASSIGN (line %d)\n", node->lineno); break;
-        case NODE_IF: printf("IF (line %d)\n", node->lineno); break;
-        case NODE_WHILE: printf("WHILE (line %d)\n", node->lineno); break;
-        case NODE_RETURN: printf("RETURN (line %d)\n", node->lineno); break;
-        case NODE_READ: printf("READ (line %d)\n", node->lineno); break;
-        case NODE_WRITE: printf("WRITE (line %d)\n", node->lineno); break;
-        case NODE_FUNCTION_CALL: printf("CALL name=%s (line %d)\n", node->name?node->name:"", node->lineno); break;
-        case NODE_ID: printf("ID name=%s (line %d)\n", node->name?node->name:"", node->lineno); break;
-        case NODE_INT_LITERAL: printf("INT %d (line %d)\n", node->intValue, node->lineno); break;
-        case NODE_FLOAT_LITERAL: printf("FLOAT %g (line %d)\n", node->floatValue, node->lineno); break;
-        case NODE_BINARY_OP: printf("BINOP %s (line %d)\n", node->name?node->name:"", node->lineno); break;
-        case NODE_UNARY_OP: printf("UNOP %s (line %d)\n", node->name?node->name:"", node->lineno); break;
-        default: printf("NODE kind=%d (line %d)\n", node->kind, node->lineno); break;
+        case NODE_PROGRAM:
+            printf("PROGRAM\n");
+            break;
+        case NODE_CLASS_DECL:
+            printf("CLASS_DECL name=%s (line %d)\n",
+            node->name?node->name:"", node->lineno);
+            break;
+        case NODE_ATTRIBUTE:
+            printf("ATTRIBUTE name=%s type=%s (line %d)\n",
+            node->name?node->name:"", node->typeName?node->typeName:"", node->lineno);
+            break;
+        case NODE_FUNC_DECL:
+            printf("FUNC_DECL name=%s return=%s (line %d)\n",
+            node->name?node->name:"", node->typeName?node->typeName:"", node->lineno);
+            break;
+        case NODE_VAR_DECL:
+            printf("VAR_DECL name=%s type=%s (line %d)\n",
+            node->name?node->name:"", node->typeName?node->typeName:"", node->lineno);
+            break;
+        case NODE_PARAM:
+            printf("PARAM name=%s type=%s (line %d)\n",
+            node->name?node->name:"", node->typeName?node->typeName:"", node->lineno);
+            break;
+        case NODE_ASSIGN:
+            printf("ASSIGN (line %d)\n",
+            node->lineno);
+            break;
+        case NODE_IF:
+            printf("IF (line %d)\n",
+            node->lineno);
+            break;
+        case NODE_WHILE:
+            printf("WHILE (line %d)\n",
+            node->lineno);
+            break;
+        case NODE_RETURN:
+            printf("RETURN (line %d)\n",
+            node->lineno);
+            break;
+        case NODE_READ:
+            printf("READ (line %d)\n",
+            node->lineno);
+            break;
+        case NODE_WRITE:
+            printf("WRITE (line %d)\n",
+            node->lineno);
+            break;
+        case NODE_FUNCTION_CALL:
+            printf("CALL name=%s (line %d)\n",
+            node->name?node->name:"", node->lineno);
+            break;
+        case NODE_ID:
+            printf("ID name=%s (line %d)\n",
+            node->name?node->name:"", node->lineno);
+            break;
+        case NODE_INT_LITERAL:
+            printf("INT %d (line %d)\n",
+            node->intValue, node->lineno);
+            break;
+        case NODE_FLOAT_LITERAL:
+            printf("FLOAT %g (line %d)\n",
+            node->floatValue, node->lineno);
+            break;
+        case NODE_STRING_LITERAL:
+            printf("STRING \"%s\" (line %d)\n",
+            node->name?node->name:"", node->lineno);
+            break;
+        case NODE_BINARY_OP:
+            printf("BINOP %s (line %d)\n",
+            node->name?node->name:"", node->lineno);
+            break;
+        case NODE_UNARY_OP:
+            printf("UNOP %s (line %d)\n",
+            node->name?node->name:"", node->lineno);
+            break;
+        default:
+            printf("NODE kind=%d (line %d)\n",
+            node->kind, node->lineno);
+            break;
     }
     // print children
     AST *c = node->child;

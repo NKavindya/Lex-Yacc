@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern int current_line; /* defined in parser.y */
+int current_line = 1; /* keep global line number */
+#define YY_USER_ACTION yylloc.first_line = current_line;
 %}
 
 %option noyywrap
@@ -13,7 +14,7 @@ extern int current_line; /* defined in parser.y */
 %%
 
 [ \t]+            ;                  /* skip whitespace */
-\n                { current_line++; } /* count lines */
+\n    { current_line++; }
 
 "class"           { return CLASS; }
 "implement"       { return IMPLEMENT; }
@@ -44,6 +45,8 @@ extern int current_line; /* defined in parser.y */
 "and"             { return AND; }
 "or"              { return OR; }
 "not"             { return NOT; }
+"&&"              { return AND; }
+"||"              { return OR; }
 
 "->"              { return ARROW; }
 "=>"              { return ARROW; }
@@ -67,6 +70,7 @@ extern int current_line; /* defined in parser.y */
 [0-9]+\.[0-9]+    { yylval.dVal = atof(yytext); return FLOAT_LIT; }
 0|[1-9][0-9]*     { yylval.iVal = atoi(yytext); return INT_LIT; }
 
+\"([^\"\\]|\\.)*\"   { yylval.sVal = strdup(yytext); return STRING_LIT; }
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.sVal = strdup(yytext); return ID; }
 
 "//".*            ;

@@ -4,14 +4,18 @@
 #include <string.h>
 #include "ast.h"
 
+/* external lexer interface */
 extern int yylex();
 void yyerror(const char *s);
 extern FILE *yyin;
+extern int current_line;
 
-/* expose AST root to main and tracking line numbers */
+/* expose AST root */
 AST *astRoot = NULL;
-int current_line = 1;
 %}
+
+/* enable location tracking */
+%locations
 
 /* semantic value union */
 %union {
@@ -25,29 +29,30 @@ int current_line = 1;
 %token <sVal> ID
 %token <iVal> INT_LIT
 %token <dVal> FLOAT_LIT
+%token <sVal> STRING_LIT
 
 %token CLASS IMPLEMENT FUNC CONSTRUCT ATTRIBUTE PUBLIC PRIVATE RETURN READ WRITE IF ELSE WHILE VOID SELF ISA LOCAL THEN
 
 %token COLON SEMICOLON COMMA DOT ASSIGN ARROW LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET
 %token PLUS MINUS MULT DIV AND OR NOT EQ NE LT GT LE GE
 
-/* nonterminals carry AST* */
+/* nonterminals carry AST */
+%type <node> statBlock statementList expr relExpr arithExpr term factor functionCall
 %type <node> prog classDecl classInherit moreIds classBody implDef implFuncs
 %type <node> funcDef funcHead funcBody varDeclOrStmtList varDeclOrStmt
 %type <node> localVarDecl attributeDecl varDecl arraySizes arraySize statement assignStat
-%type <node> statBlock statementList expr arithExpr term factor functionCall
 %type <node> fParams fParamsTailList aParams aParamsTailList type
 
 %%
 
-/* top-level: allow sequence of classes, impls or functions */
+/* top-level */
 prog:
-      /* one classDecl */ classDecl        { astRoot = ast_new(NODE_PROGRAM, NULL, 0); ast_append_child(astRoot, $1); }
-    | classDecl prog                          { if (!astRoot) astRoot = ast_new(NODE_PROGRAM, NULL, 0); ast_append_child(astRoot, $1); }
-    | funcDef                               { astRoot = ast_new(NODE_PROGRAM, NULL, 0); ast_append_child(astRoot, $1); }
-    | funcDef prog                           { if (!astRoot) astRoot = ast_new(NODE_PROGRAM, NULL, 0); ast_append_child(astRoot, $1); }
-    | implDef                                { if (!astRoot) astRoot = ast_new(NODE_PROGRAM, NULL, 0); ast_append_child(astRoot, $1); }
-    | /* empty */                            { astRoot = ast_new(NODE_PROGRAM, NULL, 0); }
+      classDecl                    { astRoot = ast_new(NODE_PROGRAM, NULL, @1.first_line); ast_append_child(astRoot, $1); }
+    | classDecl prog                { if (!astRoot) astRoot = ast_new(NODE_PROGRAM, NULL, @1.first_line); ast_append_child(astRoot, $1); }
+    | funcDef                       { astRoot = ast_new(NODE_PROGRAM, NULL, @1.first_line); ast_append_child(astRoot, $1); }
+    | funcDef prog                  { if (!astRoot) astRoot = ast_new(NODE_PROGRAM, NULL, @1.first_line); ast_append_child(astRoot, $1); }
+    | implDef                       { if (!astRoot) astRoot = ast_new(NODE_PROGRAM, NULL, @1.first_line); ast_append_child(astRoot, $1); }
+    | /* empty */                   { astRoot = ast_new(NODE_PROGRAM, NULL, 0); }
 ;
 
 /* CLASS */
@@ -83,24 +88,24 @@ moreIds:
     | /* empty */ { $$ = NULL; }
 ;
 
-/* classBody: handle visibility inline (attach "PUBLIC"/"PRIVATE" to attribute varDecl->typeName if needed) */
+/* classBody */
 classBody:
       PUBLIC attributeDecl classBody
       {
-          if ($2) { $2->child->typeName = strdup("PUBLIC"); }
-          if ($3) ast_append_sibling(& $2, $3);
+          if ($2 && $2->child) $2->child->typeName = strdup("PUBLIC");
+          if ($3) ast_append_sibling(&$2, $3);
           $$ = $2;
       }
     | PRIVATE attributeDecl classBody
       {
-          if ($2) { $2->child->typeName = strdup("PRIVATE"); }
-          if ($3) ast_append_sibling(& $2, $3);
+          if ($2 && $2->child) $2->child->typeName = strdup("PRIVATE");
+          if ($3) ast_append_sibling(&$2, $3);
           $$ = $2;
       }
     | /* empty */ { $$ = NULL; }
 ;
 
-/* Implementation (implDef) */
+/* Implementation */
 implDef:
       IMPLEMENT ID LBRACE implFuncs RBRACE
       {
@@ -125,7 +130,7 @@ funcDef:
       }
 ;
 
-/* funcHead: FUNC ID ( params ) ARROW type  OR CONSTRUCT(...) */
+/* funcHead */
 funcHead:
       FUNC ID LPAREN fParams RPAREN ARROW type
       {
@@ -152,7 +157,6 @@ funcBody:
       }
 ;
 
-/* varDeclOrStmt list */
 varDeclOrStmtList:
       varDeclOrStmt varDeclOrStmtList
       {
@@ -163,7 +167,6 @@ varDeclOrStmtList:
     | /* empty */ { $$ = NULL; }
 ;
 
-/* single varDecl or statement */
 varDeclOrStmt:
       localVarDecl { $$ = $1; }
     | statement    { $$ = $1; }
@@ -173,7 +176,6 @@ localVarDecl:
       LOCAL varDecl { $$ = $2; }
 ;
 
-/* attribute inside class */
 attributeDecl:
       ATTRIBUTE varDecl
       {
@@ -183,7 +185,6 @@ attributeDecl:
       }
 ;
 
-/* var declaration */
 varDecl:
       ID COLON type arraySizes SEMICOLON
       {
@@ -193,7 +194,6 @@ varDecl:
       }
 ;
 
-/* arrays (ignored shape for now) */
 arraySizes:
       arraySize arraySizes { $$ = NULL; }
     | /* empty */ { $$ = NULL; }
@@ -244,7 +244,6 @@ statement:
     | functionCall SEMICOLON { $$ = $1; }
 ;
 
-/* assignment statement */
 assignStat:
       ID ASSIGN expr
       {
@@ -256,7 +255,6 @@ assignStat:
       }
 ;
 
-/* statement list & blocks */
 statementList:
       statement statementList { AST *h = $1; if ($2) ast_append_sibling(&h, $2); $$ = h; }
     | /* empty */ { $$ = NULL; }
@@ -270,16 +268,21 @@ statBlock:
 
 /* expressions */
 expr:
-      arithExpr { $$ = $1; }
-    | arithExpr EQ arithExpr { AST *n = ast_new(NODE_BINARY_OP, "==", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
+      expr AND expr   { AST *n = ast_new(NODE_BINARY_OP, "and", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
+    | expr OR expr    { AST *n = ast_new(NODE_BINARY_OP, "or", @2.first_line);  ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
+    | relExpr         { $$ = $1; }
+;
+
+relExpr:
+      arithExpr EQ arithExpr { AST *n = ast_new(NODE_BINARY_OP, "==", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
     | arithExpr NE arithExpr { AST *n = ast_new(NODE_BINARY_OP, "<>", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
     | arithExpr LT arithExpr { AST *n = ast_new(NODE_BINARY_OP, "<", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
     | arithExpr GT arithExpr { AST *n = ast_new(NODE_BINARY_OP, ">", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
     | arithExpr LE arithExpr { AST *n = ast_new(NODE_BINARY_OP, "<=", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
     | arithExpr GE arithExpr { AST *n = ast_new(NODE_BINARY_OP, ">=", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
+    | arithExpr               { $$ = $1; }
 ;
 
-/* arithmetic (left-associative) */
 arithExpr:
       term { $$ = $1; }
     | arithExpr PLUS term  { AST *n = ast_new(NODE_BINARY_OP, "+", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
@@ -293,11 +296,13 @@ term:
 ;
 
 factor:
-      ID              { $$ = ast_new(NODE_ID, $1, @1.first_line); }
-    | INT_LIT         { $$ = ast_new(NODE_INT_LITERAL, NULL, @1.first_line); $$->intValue = $1; }
-    | FLOAT_LIT       { $$ = ast_new(NODE_FLOAT_LITERAL, NULL, @1.first_line); $$->floatValue = $1; }
+      NOT factor { AST *n = ast_new(NODE_UNARY_OP, "not", @1.first_line); ast_append_child(n, $2); $$ = n; }
+    | ID        { $$ = ast_new(NODE_ID, $1, @1.first_line); }
+    | INT_LIT   { $$ = ast_new(NODE_INT_LITERAL, NULL, @1.first_line); $$->intValue = $1; }
+    | FLOAT_LIT { $$ = ast_new(NODE_FLOAT_LITERAL, NULL, @1.first_line); $$->floatValue = $1; }
+    | STRING_LIT { $$ = ast_new(NODE_STRING_LITERAL, $1, @1.first_line); }
     | LPAREN arithExpr RPAREN { $$ = $2; }
-    | functionCall    { $$ = $1; }
+    | functionCall { $$ = $1; }
 ;
 
 /* function call */
@@ -343,18 +348,17 @@ aParamsTailList:
     | /* empty */ { $$ = NULL; }
 ;
 
-/* Normalize type node names so semantic phase sees canonical names */
+/* Normalize type names */
 type:
       ID
       {
           const char *raw = $1;
           char buf[64] = {0};
           if (raw) {
-              if (strcmp(raw, "int") == 0) strncpy(buf, "integer", sizeof(buf)-1);
-              else if (strcmp(raw, "integer") == 0) strncpy(buf, "integer", sizeof(buf)-1);
+              if (strcmp(raw, "int") == 0 || strcmp(raw, "integer") == 0) strncpy(buf, "integer", sizeof(buf)-1);
               else if (strcmp(raw, "float") == 0) strncpy(buf, "float", sizeof(buf)-1);
               else if (strcmp(raw, "void") == 0) strncpy(buf, "void", sizeof(buf)-1);
-              else strncpy(buf, raw, sizeof(buf)-1); /* user-defined class or id */
+              else strncpy(buf, raw, sizeof(buf)-1);
           }
           AST *t = ast_new(NODE_TYPE, buf[0] ? strdup(buf) : NULL, @1.first_line);
           $$ = t;

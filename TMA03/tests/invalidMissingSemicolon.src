@@ -1,3 +1,0 @@
-func wrong(x: integer) => integer {
-    x := 5   // missing semicolon
-}

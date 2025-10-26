@@ -25,6 +25,7 @@ typedef enum {
     NODE_ID,
     NODE_INT_LITERAL,
     NODE_FLOAT_LITERAL,
+    NODE_STRING_LITERAL,
     NODE_BINARY_OP,
     NODE_UNARY_OP,
     NODE_TYPE,
@@ -47,6 +48,7 @@ typedef struct AST {
 AST *ast_new(NodeKind kind, const char *name, int lineno);
 AST *ast_new_int(int val, int lineno);
 AST *ast_new_float(double val, int lineno);
+AST *ast_new_string(const char *val, int lineno);
 void ast_append_child(AST *parent, AST *child);
 void ast_append_sibling(AST **list, AST *node);
 void ast_print(AST *node, int indent);
