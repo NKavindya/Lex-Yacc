@@ -1,0 +1,23 @@
+// relational operators
+func compare(a : integer, b : integer) -> integer {
+    local result : integer;
+    if (a == b) then {
+        result := 0;
+    } else {
+        result := -1;
+    };
+    if (a < b) then {
+        result := -1;
+    };
+    if (a > b) then {
+        result := 1;
+    };
+    if (a <= b) then {
+        result := result + 1;
+    };
+    if (a >= b) then {
+        result := result + 1;
+    };
+    return(result);
+}
+

@@ -1,0 +1,5 @@
+func compute(a : float, b : int) -> float {
+    local total : float;
+    total := a + b;
+    return(total);
+}

@@ -1,0 +1,7 @@
+// undeclared function call
+func testUndeclared() -> integer {
+    local result : integer;
+    result := unknownFunction(5);  // error: function not declared
+    return(result);
+}
+

@@ -1,0 +1,9 @@
+// type mismatch in arithmetic operation
+func testArithMismatch() -> integer {
+    local x : integer;
+    local y : integer;
+    x := 5;
+    y := x + "hello";  // error: cannot add integer and string
+    return(y);
+}
+

@@ -1,0 +1,12 @@
+// function called with wrong number of arguments
+func add(a : integer, b : integer) -> integer {
+    return(a + b);
+}
+
+func testWrongArgCount() -> integer {
+    local result : integer;
+    result := add(5);  // error: expected 2 arguments, got 1
+    result := add(1, 2, 3);  // error: expected 2 arguments, got 3
+    return(result);
+}
+

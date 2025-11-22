@@ -1,0 +1,7 @@
+// return statement in void function
+func voidFunction() -> void {
+    local x : integer;
+    x := 5;
+    return(x);  // error: void function should not return a value
+}
+

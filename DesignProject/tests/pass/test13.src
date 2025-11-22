@@ -1,0 +1,17 @@
+// class with multiple attributes and methods
+class Rectangle {
+    public attribute width : integer;
+    public attribute height : integer;
+    
+    public func area() -> integer {
+        return(width * height);
+    };
+};
+
+func createRect(w : integer, h : integer) -> integer {
+    local rect : Rectangle;
+    rect.width := w;
+    rect.height := h;
+    return(rect.area());
+}
+

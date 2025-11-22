@@ -1,0 +1,5 @@
+// wrong return type
+func wrongReturn() -> integer {
+    return(5.5);  // error: returning float from integer function
+}
+

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8538e7c9-2a95-4879-ac4f-68e566449470" name="Changes" comment="Update files.">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Lex-Yacc.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/DesignProject/BUILD_AND_RUN.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/DesignProject/FileStructure.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/DesignProject/Report.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/DesignProject/TMA03.md" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="dp-x86" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+  </component>
+  <component name="GitRewordedCommitMessages">
+    <option name="commitMessagesMapping">
+      <RewordedCommitMessageMapping>
+        <option name="originalMessage" value="Add Design Project Files." />
+        <option name="rewordedMessage" value="Add Design Project Files." />
+      </RewordedCommitMessageMapping>
+    </option>
+    <option name="currentCommit" value="1" />
+    <option name="onto" value="b789ab43391ded3293fdd4171dcecad145388324" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="35qNEwfldXXeJN969e6Vlsfom1i" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/nkavindya/EntgraRepo/study-planner",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/DesignProject" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.28238.7" />
+        <option value="bundled-js-predefined-d6986cc7102b-a71380e98a7c-JavaScript-IU-252.28238.7" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8538e7c9-2a95-4879-ac4f-68e566449470" name="Changes" comment="" />
+      <created>1763833533809</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1763833533809</updated>
+      <workItem from="1763833537975" duration="18898000" />
+      <workItem from="1764251940036" duration="1160000" />
+      <workItem from="1764324024762" duration="8687000" />
+      <workItem from="1764416336848" duration="8840000" />
+      <workItem from="1764452518305" duration="11422000" />
+    </task>
+    <task id="LOCAL-00001" summary="Add Design Project Files.">
+      <option name="closed" value="true" />
+      <created>1763837178273</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1763837178273</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Add Design Project Files.">
+      <option name="closed" value="true" />
+      <created>1763837440679</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1763837440679</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Add Design Project Files.">
+      <option name="closed" value="true" />
+      <created>1763838429299</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1763838429299</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Add Design Project Files.">
+      <option name="closed" value="true" />
+      <created>1763838492742</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1763838492742</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Add Design Project Files.">
+      <option name="closed" value="true" />
+      <created>1763916015453</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1763916015453</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Add Design Project Files.">
+      <option name="closed" value="true" />
+      <created>1763916432508</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1763916432508</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1763921374999</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1763921374999</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1763923259175</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1763923259175</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1763924013202</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1763924013202</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1763929549175</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1763929549175</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764351358993</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1764351358993</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764355535713</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1764355535713</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764427182940</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1764427182940</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764440362265</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1764440362265</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764449197632</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1764449197632</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764449796033</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1764449796033</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764452716238</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1764452716238</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764453394825</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1764453394825</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764493814653</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1764493814653</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764500626646</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1764500626646</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764502840572</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1764502840572</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764522772251</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1764522772251</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Update files.">
+      <option name="closed" value="true" />
+      <created>1764525230231</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1764525230231</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="dp-x86" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="main" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="test" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="dp" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="dp-x86" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Update files." />
+    <MESSAGE value="Add Design Project Files." />
+    <option name="LAST_COMMIT_MESSAGE" value="Add Design Project Files." />
+  </component>
+</project>

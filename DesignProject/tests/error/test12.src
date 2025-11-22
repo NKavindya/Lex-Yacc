@@ -1,0 +1,5 @@
+// duplicate parameter names
+func duplicateParams(a : integer, a : integer) -> integer {  // error: duplicate parameter 'a'
+    return(a + a);
+}
+
