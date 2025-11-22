@@ -449,3 +449,7 @@ static void semantic_passB_visit(AST *node, SymTable *scope, const char *current
 void semantic_passB(AST *root) {
     semantic_passB_visit(root, globalTable, NULL);
 }
+
+int semantic_error_total(void) {
+    return errorCount;
+}

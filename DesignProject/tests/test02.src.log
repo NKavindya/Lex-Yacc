@@ -1,0 +1,17 @@
+=== AST ===
+PROGRAM
+  FUNC_DECL name=compute return=float (line 1)
+    PARAM name=a type=float (line 1)
+    PARAM name=b type=int (line 1)
+    EXTRA:
+      NODE kind=9 (line 1)
+        VAR_DECL name=total type=float (line 2)
+        ASSIGN (line 3)
+          ID name=total (line 3)
+          BINOP + (line 3)
+            ID name=a (line 3)
+            ID name=b (line 3)
+        RETURN (line 4)
+          ID name=total (line 4)
+Code generation written to codegen.asm
+Done. See lexer_tokens.txt, lexer_symbols.txt, semantic_errors.txt, symbol_table.txt, codegen.asm

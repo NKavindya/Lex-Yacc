@@ -3,6 +3,7 @@
 #include "ast.h"
 #include "symbol_table.h"
 #include "lexer_support.h"
+#include "codegen.h"
 
 /* parser exposes astRoot and yyparse/yyin */
 extern AST *astRoot;
@@ -13,6 +14,7 @@ FILE *derivation_file = NULL;
 /* semantic functions */
 void semantic_passA(AST *root);
 void semantic_passB(AST *root);
+int semantic_error_total(void);
 extern SymTable *globalTable;
 extern FILE *errFile;
 
@@ -64,6 +66,7 @@ int main(int argc, char **argv) {
 
     /* pass B: semantic checks */
     semantic_passB(astRoot);
+    int semanticErrors = semantic_error_total();
 
     /* lexical artifacts */
     FILE *lexsym = fopen("lexer_symbols.txt", "w");
@@ -83,9 +86,21 @@ int main(int argc, char **argv) {
     }
     lex_support_finalize();
 
+    if (semanticErrors == 0) {
+        if (codegen_generate(astRoot, globalTable, "codegen.asm") == 0) {
+            printf("Code generation written to codegen.asm\n");
+        } else {
+            fprintf(stderr, "Code generation failed.\n");
+        }
+    } else {
+        printf("Skipping code generation due to %d semantic error(s).\n", semanticErrors);
+    }
+
     if (errFile && errFile != stdout) fclose(errFile);
     if (derivation_file) fclose(derivation_file);
 
-    printf("Done. See lexer_tokens.txt, lexer_symbols.txt, semantic_errors.txt, symbol_table.txt\n");
+    printf("Done. See lexer_tokens.txt, lexer_symbols.txt, semantic_errors.txt, symbol_table.txt");
+    if (semanticErrors == 0) printf(", codegen.asm");
+    printf("\n");
     return 0;
 }

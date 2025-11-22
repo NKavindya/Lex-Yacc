@@ -1,0 +1,10 @@
+Lexical Symbol Table
+====================
+return          kind=reserved        first=4:5 count=1
+result          kind=identifier      first=2:11 count=3
+local           kind=reserved        first=2:5 count=1
+b               kind=identifier      first=1:19 count=2
+int             kind=reserved        first=1:14 count=4
+a               kind=identifier      first=1:10 count=2
+add             kind=identifier      first=1:6 count=1
+func            kind=reserved        first=1:1 count=1

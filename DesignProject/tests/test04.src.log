@@ -1,0 +1,17 @@
+=== AST ===
+PROGRAM
+  FUNC_DECL name=wrong return=int (line 1)
+    PARAM name=a type=int (line 1)
+    PARAM name=b type=int (line 1)
+    EXTRA:
+      NODE kind=9 (line 1)
+        VAR_DECL name=text type=string (line 2)
+        ASSIGN (line 3)
+          ID name=text (line 3)
+          BINOP + (line 3)
+            ID name=a (line 3)
+            ID name=b (line 3)
+        RETURN (line 4)
+          ID name=a (line 4)
+Skipping code generation due to 1 semantic error(s).
+Done. See lexer_tokens.txt, lexer_symbols.txt, semantic_errors.txt, symbol_table.txt

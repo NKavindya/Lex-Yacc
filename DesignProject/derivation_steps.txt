@@ -1,0 +1,38 @@
+type -> INTEGER
+type -> INTEGER
+fParamsTailList -> epsilon
+fParamsTailList -> , id : type fParamsTailList
+fParams -> id : type fParamsTailList
+type -> INTEGER
+returnType -> type
+funcHead -> FUNC id ( fParams ) ARROW returnType
+type -> INTEGER
+arraySizes -> epsilon
+varDecl -> id : type arraySizes ;
+localVarDecl -> LOCAL varDecl
+varDeclOrStmt -> localVarDecl
+factor -> id
+term -> factor
+arithExpr -> term
+factor -> id
+term -> factor
+arithExpr -> arithExpr + term
+relExpr -> arithExpr
+expr -> relExpr
+assignStat -> id ASSIGN expr
+statement -> assignStat ;
+varDeclOrStmt -> statement
+factor -> id
+term -> factor
+arithExpr -> term
+relExpr -> arithExpr
+expr -> relExpr
+statement -> RETURN ( expr ) ;
+varDeclOrStmt -> statement
+varDeclOrStmtList -> epsilon
+varDeclOrStmtList -> varDeclOrStmt varDeclOrStmtList
+varDeclOrStmtList -> varDeclOrStmt varDeclOrStmtList
+varDeclOrStmtList -> varDeclOrStmt varDeclOrStmtList
+funcBody -> { varDeclOrStmtList }
+funcDef -> funcHead funcBody
+prog -> funcDef
