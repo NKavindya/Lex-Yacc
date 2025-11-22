@@ -1,0 +1,6 @@
+// type mismatch in assignment
+func testTypeMismatch() -> void {
+    local x : integer;
+    x := 5.5;  // error: assigning float to integer
+}
+

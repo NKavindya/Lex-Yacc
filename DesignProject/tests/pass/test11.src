@@ -1,0 +1,9 @@
+// complex arithmetic expressions with precedence
+func complexExpr(a : integer, b : integer, c : integer) -> integer {
+    local result : integer;
+    result := a + b * c;
+    result := result - a / b;
+    result := result * (a + b);
+    return(result);
+}
+

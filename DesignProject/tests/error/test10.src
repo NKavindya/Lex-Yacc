@@ -1,0 +1,11 @@
+// parameter type mismatch in function call
+func add(a : integer, b : integer) -> integer {
+    return(a + b);
+}
+
+func testParamMismatch() -> integer {
+    local x : integer;
+    x := add(5, 5.5);  // error: second argument type mismatch
+    return(x);
+}
+

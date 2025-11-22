@@ -1,0 +1,15 @@
+// mixed control flow (if, while, function calls)
+func controlFlow(x : integer) -> integer {
+    local count : integer;
+    count := 0;
+    while (x > 0) {
+        if (x > 10) then {
+            count := count + 1;
+        } else {
+            count := count - 1;
+        };
+        x := x - 1;
+    };
+    return(count);
+}
+

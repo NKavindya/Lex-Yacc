@@ -1,0 +1,18 @@
+// logical operators with short-circuit evaluation
+func testLogical(a : integer, b : integer) -> integer {
+    local result : integer;
+    local cond1 : integer;
+    local cond2 : integer;
+    cond1 := a > 0;
+    cond2 := b > 0;
+    if (cond1 and cond2) then {
+        result := a + b;
+    } else {
+        result := 0;
+    };
+    if (cond1 or cond2) then {
+        result := result + 1;
+    };
+    return(result);
+}
+

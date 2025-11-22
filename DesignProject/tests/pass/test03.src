@@ -1,0 +1,7 @@
+// simple arithmetic and function calls
+func testAdd(a : integer, b : integer) -> integer {
+    local result : integer;
+    result := a + b;
+    return(result);
+}
+

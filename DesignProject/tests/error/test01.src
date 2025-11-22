@@ -1,0 +1,7 @@
+// undeclared variable - c is not declared
+func add(a : integer, b : integer) -> integer {
+    local result : integer;
+    result := a + b + c;
+    return(result);
+}
+
