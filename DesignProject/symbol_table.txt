@@ -1,0 +1,7 @@
+Scope: global
+  add	int	FUNC	(line 1)
+    params: a:int b:int
+Scope: add
+  result	int	VAR	(line 2)
+  b	int	PARAM	(line 1)
+  a	int	PARAM	(line 1)
