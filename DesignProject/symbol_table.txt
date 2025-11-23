@@ -1,9 +1,0 @@
-Scope: global
-  frame_size = 0 bytes
-  add	int	FUNC	(line 1)
-    params: a:int b:int
-Scope: add
-  frame_size = 24 bytes
-  result	int	VAR	(line 2)	offset=24 size=8
-  b	int	PARAM	(line 1)	offset=16 size=8
-  a	int	PARAM	(line 1)	offset=8 size=8
