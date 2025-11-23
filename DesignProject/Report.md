@@ -1,5 +1,18 @@
 # EEX6363 Design Project – Final Report
 
+## Parser Implementation Note
+
+This Design Project uses **Bison (LR parser)** for syntax analysis. While TMA #2 required LL(1) grammar transformation and predictive parsing, the Design Project (which integrates TMA #1, #2, and #3) uses an LR parser for practical reasons:
+
+- **Bison provides robust error recovery** and conflict resolution
+- **The grammar has 11 shift/reduce and 2 reduce/reduce conflicts** which Bison handles automatically
+- **LR parsing is more suitable** for the complete language grammar with all features
+- **The parser successfully builds ASTs** for all test cases and logs derivation steps to `derivation_steps.txt`
+
+The parser implementation (`parser.y`) uses syntax-directed translation to build the Abstract Syntax Tree, which is then processed by the semantic analyzer and code generator. All phases work together to produce the final assembly output.
+
+---
+
 ## (a) Code Generation Design
 
 ### (i) Register allocation / deallocation
