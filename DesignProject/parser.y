@@ -40,11 +40,12 @@ AST *astRoot = NULL;
 %token PLUS MINUS MULT DIV AND OR NOT EQ NE LT GT LE GE
 
 /* nonterminals carry AST */
-%type <node> statBlock statementList expr relExpr arithExpr term factor functionCall
+%type <node> statBlock statementList expr exprPrime relExpr arithExpr arithExprPrime term termPrime factor functionCall
 %type <node> prog classDecl classInherit moreIds classBody implDef implFuncs
 %type <node> funcDef funcHead funcBody varDeclOrStmtList varDeclOrStmt
 %type <node> localVarDecl attributeDecl varDecl arraySizes arraySize statement assignStat
 %type <node> fParams fParamsTailList aParams aParamsTailList type returnType
+%type <sVal> addOp multOp
 
 %%
 
@@ -419,28 +420,59 @@ statBlock:
       }
 ;
 
-/* expressions */
+/* expressions - LL(1) right-recursive form */
 expr:
-      expr AND expr
+      relExpr exprPrime
       {
-          log_production("expr -> expr AND expr");
-          AST *n = ast_new(NODE_BINARY_OP, "and", @2.first_line);
-          ast_append_child(n, $1);
-          ast_append_child(n, $3);
-          $$ = n;
+          log_production("expr -> relExpr exprPrime");
+          if ($2) {
+              /* Build left-associative tree from right-recursive parse */
+              AST *op = $2;
+              AST *left = $1;
+              AST *right = op->child ? op->child->sibling : NULL;
+              op->child = left;
+              if (right) {
+                  op->child->sibling = right;
+              }
+              $$ = op;
+          } else {
+              $$ = $1;
+          }
       }
-    | expr OR expr
+;
+
+exprPrime:
+      AND relExpr exprPrime
       {
-          log_production("expr -> expr OR expr");
-          AST *n = ast_new(NODE_BINARY_OP, "or", @2.first_line);
-          ast_append_child(n, $1);
-          ast_append_child(n, $3);
-          $$ = n;
+          log_production("exprPrime -> AND relExpr exprPrime");
+          AST *op = ast_new(NODE_BINARY_OP, "and", @1.first_line);
+          op->child = $2;  /* right operand */
+          if ($3) {
+              /* Chain: (left AND right) AND next */
+              AST *chain = $3;
+              chain->child->sibling = op;  /* attach to chain */
+              $$ = chain;
+          } else {
+              $$ = op;
+          }
       }
-    | relExpr
+    | OR relExpr exprPrime
       {
-          log_production("expr -> relExpr");
-          $$ = $1;
+          log_production("exprPrime -> OR relExpr exprPrime");
+          AST *op = ast_new(NODE_BINARY_OP, "or", @1.first_line);
+          op->child = $2;
+          if ($3) {
+              AST *chain = $3;
+              chain->child->sibling = op;
+              $$ = chain;
+          } else {
+              $$ = op;
+          }
+      }
+    | /* empty */
+      {
+          log_production("exprPrime -> epsilon");
+          $$ = NULL;
       }
 ;
 
@@ -501,50 +533,115 @@ relExpr:
 ;
 
 arithExpr:
-      term
+      term arithExprPrime
       {
-          log_production("arithExpr -> term");
-          $$ = $1;
+          log_production("arithExpr -> term arithExprPrime");
+          if ($2) {
+              AST *op = $2;
+              AST *left = $1;
+              AST *right = op->child;
+              op->child = left;
+              if (right) {
+                  op->child->sibling = right;
+              }
+              $$ = op;
+          } else {
+              $$ = $1;
+          }
       }
-    | arithExpr PLUS term
+;
+
+arithExprPrime:
+      addOp term arithExprPrime
       {
-          log_production("arithExpr -> arithExpr + term");
-          AST *n = ast_new(NODE_BINARY_OP, "+", @2.first_line);
-          ast_append_child(n, $1);
-          ast_append_child(n, $3);
-          $$ = n;
+          log_production("arithExprPrime -> addOp term arithExprPrime");
+          AST *op = ast_new(NODE_BINARY_OP, $1, @1.first_line);
+          op->child = $2;  /* right operand (term) */
+          if ($3) {
+              AST *chain = $3;
+              chain->child->sibling = op;
+              $$ = chain;
+          } else {
+              $$ = op;
+          }
+          free($1);
       }
-    | arithExpr MINUS term
+    | /* empty */
       {
-          log_production("arithExpr -> arithExpr - term");
-          AST *n = ast_new(NODE_BINARY_OP, "-", @2.first_line);
-          ast_append_child(n, $1);
-          ast_append_child(n, $3);
-          $$ = n;
+          log_production("arithExprPrime -> epsilon");
+          $$ = NULL;
+      }
+;
+
+addOp:
+      PLUS
+      {
+          log_production("addOp -> +");
+          $$ = strdup("+");
+      }
+    | MINUS
+      {
+          log_production("addOp -> -");
+          $$ = strdup("-");
       }
 ;
 
 term:
-      factor
+      factor termPrime
       {
-          log_production("term -> factor");
-          $$ = $1;
+          log_production("term -> factor termPrime");
+          if ($2) {
+              AST *op = $2;
+              AST *left = $1;
+              AST *right = op->child;
+              op->child = left;
+              if (right) {
+                  op->child->sibling = right;
+              }
+              $$ = op;
+          } else {
+              $$ = $1;
+          }
       }
-    | term MULT factor
+;
+
+termPrime:
+      multOp factor termPrime
       {
-          log_production("term -> term * factor");
-          AST *n = ast_new(NODE_BINARY_OP, "*", @2.first_line);
-          ast_append_child(n, $1);
-          ast_append_child(n, $3);
-          $$ = n;
+          log_production("termPrime -> multOp factor termPrime");
+          AST *op = ast_new(NODE_BINARY_OP, $1, @1.first_line);
+          op->child = $2;  /* right operand (factor) */
+          if ($3) {
+              AST *chain = $3;
+              chain->child->sibling = op;
+              $$ = chain;
+          } else {
+              $$ = op;
+          }
+          free($1);
       }
-    | term DIV factor
+    | /* empty */
       {
-          log_production("term -> term / factor");
-          AST *n = ast_new(NODE_BINARY_OP, "/", @2.first_line);
-          ast_append_child(n, $1);
-          ast_append_child(n, $3);
-          $$ = n;
+          log_production("termPrime -> epsilon");
+          $$ = NULL;
+      }
+;
+
+multOp:
+      MULT
+      {
+          log_production("multOp -> *");
+          $$ = strdup("*");
+      }
+    | DIV
+      {
+          log_production("multOp -> /");
+          $$ = strdup("/");
+      }
+    | AND
+      {
+          log_production("multOp -> and");
+          $$ = strdup("and");
       }
 ;
 
