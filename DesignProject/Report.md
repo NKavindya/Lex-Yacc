@@ -11,6 +11,21 @@ This Design Project uses **Bison (LR parser)** for syntax analysis. While TMA #2
 
 The parser implementation (`parser.y`) uses syntax-directed translation to build the Abstract Syntax Tree, which is then processed by the semantic analyzer and code generator. All phases work together to produce the final assembly output.
 
+### Grammar Coverage
+
+**Current Coverage**: ~85% of TMA02 original grammar
+- ✅ All basic declarations, statements, and control flow
+- ✅ Basic expressions and operators
+- ❌ Missing nested variable/function access (OOP features: `obj.field[index]`, `obj.method()`)
+- ❌ Missing unary sign operators (`+x`, `-y`)
+- ⚠️ Not LL(1) compatible (left recursion in `expr`, `arithExpr`, `term`)
+
+**LL(1) Conversion**: Yes, it is possible and feasible. See `GRAMMAR_COVERAGE.md` and `LL1_CONVERSION_GUIDE.md` for detailed transformation instructions. The conversion would:
+- Remove left recursion using right-recursive forms
+- Add missing features (variable, idnest, indice, sign)
+- Maintain 100% compatibility with existing AST structure and semantic analysis
+- Achieve full TMA02 grammar coverage
+
 ---
 
 ## (a) Code Generation Design
