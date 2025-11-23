@@ -1,4 +1,12 @@
-# Compiler Build and Run Instructions
+# Design Project - Compiler Build and Run Instructions
+
+## Parser Type Note
+This compiler uses **Bison (LR parser generator)** to implement an **LL(1) structured grammar**. The grammar has been transformed to be LL(1) compatible:
+- All left recursion removed (right-recursive forms used)
+- All TMA02 grammar features included
+- Grammar structure follows LL(1) principles
+
+See `Report.md` and `TMA03/Report.md` for detailed LL(1) transformation documentation.
 
 ## Prerequisites
 Make sure you have `bison`, `flex`, and `gcc` installed:

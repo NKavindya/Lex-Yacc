@@ -37,11 +37,12 @@ AST *astRoot = NULL;
 %token PLUS MINUS MULT DIV AND OR NOT EQ NE LT GT LE GE
 
 /* nonterminals carry AST */
-%type <node> statBlock statementList expr relExpr arithExpr term factor functionCall
+%type <node> statBlock statementList expr exprPrime relExpr arithExpr arithExprPrime term termPrime factor functionCall
 %type <node> prog classDecl classInherit moreIds classBody implDef implFuncs
 %type <node> funcDef funcHead funcBody varDeclOrStmtList varDeclOrStmt
 %type <node> localVarDecl attributeDecl varDecl arraySizes arraySize statement assignStat
 %type <node> fParams fParamsTailList aParams aParamsTailList type
+%type <node> variable idnestChain idnest indiceChain indice idOrSelf sign addOp multOp
 
 %%
 
@@ -222,11 +223,10 @@ statement:
           ast_append_child(node, $5);
           $$ = node;
       }
-    | READ LPAREN ID RPAREN SEMICOLON
+    | READ LPAREN variable RPAREN SEMICOLON
       {
           AST *n = ast_new(NODE_READ, NULL, @1.first_line);
-          AST *idn = ast_new(NODE_ID, $3, @3.first_line);
-          ast_append_child(n, idn);
+          ast_append_child(n, $3);
           $$ = n;
       }
     | WRITE LPAREN expr RPAREN SEMICOLON
@@ -245,11 +245,10 @@ statement:
 ;
 
 assignStat:
-      ID ASSIGN expr
+      variable ASSIGN expr
       {
-          AST *lhs = ast_new(NODE_ID, $1, @1.first_line);
           AST *assign = ast_new(NODE_ASSIGN, NULL, @1.first_line);
-          ast_append_child(assign, lhs);
+          ast_append_child(assign, $1);
           ast_append_child(assign, $3);
           $$ = assign;
       }
@@ -266,11 +265,49 @@ statBlock:
     | /* empty */ { $$ = NULL; }
 ;
 
-/* expressions */
+/* expressions - LL(1) right-recursive form */
 expr:
-      expr AND expr   { AST *n = ast_new(NODE_BINARY_OP, "and", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
-    | expr OR expr    { AST *n = ast_new(NODE_BINARY_OP, "or", @2.first_line);  ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
-    | relExpr         { $$ = $1; }
+      relExpr exprPrime
+      {
+          if ($2) {
+              AST *op = $2;
+              AST *left = $1;
+              AST *right = op->child ? op->child->sibling : NULL;
+              op->child = left;
+              if (right) op->child->sibling = right;
+              $$ = op;
+          } else {
+              $$ = $1;
+          }
+      }
+;
+
+exprPrime:
+      AND relExpr exprPrime
+      {
+          AST *op = ast_new(NODE_BINARY_OP, "and", @1.first_line);
+          op->child = $2;
+          if ($3) {
+              AST *chain = $3;
+              chain->child->sibling = op;
+              $$ = chain;
+          } else {
+              $$ = op;
+          }
+      }
+    | OR relExpr exprPrime
+      {
+          AST *op = ast_new(NODE_BINARY_OP, "or", @1.first_line);
+          op->child = $2;
+          if ($3) {
+              AST *chain = $3;
+              chain->child->sibling = op;
+              $$ = chain;
+          } else {
+              $$ = op;
+          }
+      }
+    | /* empty */ { $$ = NULL; }
 ;
 
 relExpr:
@@ -284,20 +321,86 @@ relExpr:
 ;
 
 arithExpr:
-      term { $$ = $1; }
-    | arithExpr PLUS term  { AST *n = ast_new(NODE_BINARY_OP, "+", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
-    | arithExpr MINUS term { AST *n = ast_new(NODE_BINARY_OP, "-", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
+      term arithExprPrime
+      {
+          if ($2) {
+              AST *op = $2;
+              AST *left = $1;
+              AST *right = op->child;
+              op->child = left;
+              if (right) op->child->sibling = right;
+              $$ = op;
+          } else {
+              $$ = $1;
+          }
+      }
+;
+
+arithExprPrime:
+      addOp term arithExprPrime
+      {
+          AST *op = ast_new(NODE_BINARY_OP, $1, @1.first_line);
+          op->child = $2;
+          if ($3) {
+              AST *chain = $3;
+              chain->child->sibling = op;
+              $$ = chain;
+          } else {
+              $$ = op;
+          }
+          free($1);
+      }
+    | /* empty */ { $$ = NULL; }
+;
+
+addOp:
+      PLUS { $$ = strdup("+"); }
+    | MINUS { $$ = strdup("-"); }
 ;
 
 term:
-      factor { $$ = $1; }
-    | term MULT factor { AST *n = ast_new(NODE_BINARY_OP, "*", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
-    | term DIV factor  { AST *n = ast_new(NODE_BINARY_OP, "/", @2.first_line); ast_append_child(n, $1); ast_append_child(n, $3); $$ = n; }
+      factor termPrime
+      {
+          if ($2) {
+              AST *op = $2;
+              AST *left = $1;
+              AST *right = op->child;
+              op->child = left;
+              if (right) op->child->sibling = right;
+              $$ = op;
+          } else {
+              $$ = $1;
+          }
+      }
+;
+
+termPrime:
+      multOp factor termPrime
+      {
+          AST *op = ast_new(NODE_BINARY_OP, $1, @1.first_line);
+          op->child = $2;
+          if ($3) {
+              AST *chain = $3;
+              chain->child->sibling = op;
+              $$ = chain;
+          } else {
+              $$ = op;
+          }
+          free($1);
+      }
+    | /* empty */ { $$ = NULL; }
+;
+
+multOp:
+      MULT { $$ = strdup("*"); }
+    | DIV { $$ = strdup("/"); }
+    | AND { $$ = strdup("and"); }
 ;
 
 factor:
-      NOT factor { AST *n = ast_new(NODE_UNARY_OP, "not", @1.first_line); ast_append_child(n, $2); $$ = n; }
-    | ID        { $$ = ast_new(NODE_ID, $1, @1.first_line); }
+      sign factor { AST *n = ast_new(NODE_UNARY_OP, $1, @1.first_line); ast_append_child(n, $2); $$ = n; free($1); }
+    | NOT factor { AST *n = ast_new(NODE_UNARY_OP, "not", @1.first_line); ast_append_child(n, $2); $$ = n; }
+    | variable { $$ = $1; }
     | INT_LIT   { $$ = ast_new(NODE_INT_LITERAL, NULL, @1.first_line); $$->intValue = $1; }
     | FLOAT_LIT { $$ = ast_new(NODE_FLOAT_LITERAL, NULL, @1.first_line); $$->floatValue = $1; }
     | STRING_LIT { $$ = ast_new(NODE_STRING_LITERAL, $1, @1.first_line); }
@@ -305,12 +408,145 @@ factor:
     | functionCall { $$ = $1; }
 ;
 
-/* function call */
-functionCall:
-      ID LPAREN aParams RPAREN
+sign:
+      PLUS { $$ = strdup("+"); }
+    | MINUS { $$ = strdup("-"); }
+;
+
+variable:
+      idnestChain ID indiceChain
       {
-          AST *c = ast_new(NODE_FUNCTION_CALL, $1, @1.first_line);
-          if ($3) c->child = $3;
+          AST *var = ast_new(NODE_ID, $2, @2.first_line);
+          if ($1) {
+              AST *nested = $1;
+              if (nested->child) {
+                  AST *last = nested->child;
+                  while (last->sibling) last = last->sibling;
+                  last->sibling = var;
+              } else {
+                  nested->child = var;
+              }
+              var = nested;
+          }
+          if ($3) {
+              AST *indices = $3;
+              if (var->child) {
+                  AST *last = var->child;
+                  while (last->sibling) last = last->sibling;
+                  last->sibling = indices;
+              } else {
+                  var->child = indices;
+              }
+          }
+          $$ = var;
+      }
+;
+
+idnestChain:
+      idnest idnestChain
+      {
+          if ($2) {
+              if ($2->child) {
+                  AST *last = $2->child;
+                  while (last->sibling) last = last->sibling;
+                  last->sibling = $1;
+              } else {
+                  $2->child = $1;
+              }
+              $$ = $2;
+          } else {
+              AST *chain = ast_new(NODE_ID, NULL, @1.first_line);
+              chain->child = $1;
+              $$ = chain;
+          }
+      }
+    | /* empty */ { $$ = NULL; }
+;
+
+idnest:
+      idOrSelf indiceChain DOT
+      {
+          AST *access = $1;
+          if ($2) {
+              if (access->child) {
+                  AST *last = access->child;
+                  while (last->sibling) last = last->sibling;
+                  last->sibling = $2;
+              } else {
+                  access->child = $2;
+              }
+          }
+          $$ = access;
+      }
+    | idOrSelf LPAREN aParams RPAREN DOT
+      {
+          AST *call = ast_new(NODE_FUNCTION_CALL, $1->name, @1.first_line);
+          call->child = $1;
+          if ($3) {
+              if (call->child->sibling) {
+                  AST *last = call->child->sibling;
+                  while (last->sibling) last = last->sibling;
+                  last->sibling = $3;
+              } else {
+                  call->child->sibling = $3;
+              }
+          }
+          $$ = call;
+      }
+;
+
+idOrSelf:
+      ID { $$ = ast_new(NODE_ID, $1, @1.first_line); }
+    | SELF { $$ = ast_new(NODE_ID, "self", @1.first_line); }
+;
+
+indiceChain:
+      indice indiceChain
+      {
+          if ($2) {
+              AST *list = ast_new(NODE_ID, NULL, @1.first_line);
+              list->child = $1;
+              if ($2->child) {
+                  AST *last = list->child;
+                  while (last->sibling) last = last->sibling;
+                  last->sibling = $2->child;
+              }
+              $$ = list;
+          } else {
+              AST *list = ast_new(NODE_ID, NULL, @1.first_line);
+              list->child = $1;
+              $$ = list;
+          }
+      }
+    | /* empty */ { $$ = NULL; }
+;
+
+indice:
+      LBRACKET arithExpr RBRACKET { $$ = $2; }
+;
+
+/* function call with nested access */
+functionCall:
+      idnestChain ID LPAREN aParams RPAREN
+      {
+          AST *c = ast_new(NODE_FUNCTION_CALL, $2, @2.first_line);
+          if ($1) {
+              AST *obj = $1->child;
+              if (obj) {
+                  c->child = obj;
+                  if ($4) {
+                      if (c->child->sibling) {
+                          AST *last = c->child->sibling;
+                          while (last->sibling) last = last->sibling;
+                          last->sibling = $4;
+                      } else {
+                          c->child->sibling = $4;
+                      }
+                  }
+              }
+          } else {
+              if ($4) c->child = $4;
+          }
           $$ = c;
       }
 ;
