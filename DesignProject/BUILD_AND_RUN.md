@@ -42,14 +42,20 @@ After running, you'll have these files:
 - `symbol_table.txt` - Semantic symbol table
 - `semantic_errors.txt` - Semantic errors (if any)
 - `derivation_steps.txt` - Parser derivation steps
+- `codegen.ir` - Intermediate Representation (only if no semantic errors)
 - `codegen.asm` - Generated assembly code (only if no semantic errors)
+- `codegen.reloc` - Relocatable machine code (only if no semantic errors)
+- `codegen.abs` - Absolute machine code (only if no semantic errors)
 
 View them with:
 ```bash
 cat lexer_tokens.txt
 cat symbol_table.txt
 cat semantic_errors.txt
-cat codegen.asm
+cat codegen.ir      # Intermediate Representation
+cat codegen.asm     # Assembly code
+cat codegen.reloc   # Relocatable machine code
+cat codegen.abs     # Absolute machine code
 ```
 
 ## Step 7: Run All Tests
@@ -70,7 +76,7 @@ bison -d parser.y && flex scanner.l && gcc -o compiler main.c parser.tab.c lex.y
 
 ## Clean Generated Files
 ```bash
-rm -f compiler parser.tab.c parser.tab.h lex.yy.c *.txt *.asm
+rm -f compiler parser.tab.c parser.tab.h lex.yy.c *.txt *.asm *.ir *.reloc *.abs
 ```
 
 ## Example: Complete Workflow
@@ -85,10 +91,13 @@ gcc -o compiler main.c parser.tab.c lex.yy.c ast.c semantic.c symbol_table.c lex
 ./compiler tests/test01.src
 
 # 3. Check outputs
-ls -la *.txt *.asm
+ls -la *.txt *.asm *.ir *.reloc *.abs
 
-# 4. View generated assembly
-cat codegen.asm
+# 4. View generated code
+cat codegen.ir      # Intermediate Representation
+cat codegen.asm     # Assembly code
+cat codegen.reloc   # Relocatable machine code
+cat codegen.abs     # Absolute machine code
 
 # 5. Test on an invalid program (should show errors, no codegen)
 ./compiler tests/error01.src

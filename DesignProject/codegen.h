@@ -4,7 +4,16 @@
 #include "ast.h"
 #include "symbol_table.h"
 
+/* Generate assembly code */
 int codegen_generate(AST *root, SymTable *global, const char *outPath);
 
-#endif
+/* Generate Intermediate Representation (IR) */
+int codegen_generate_ir(AST *root, SymTable *global, const char *outPath);
 
+/* Generate relocatable machine code */
+int codegen_generate_relocatable(const char *asmPath, const char *outPath);
+
+/* Generate absolute machine code */
+int codegen_generate_absolute(const char *asmPath, const char *outPath);
+
+#endif

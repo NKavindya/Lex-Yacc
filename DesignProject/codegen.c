@@ -331,3 +331,342 @@ int codegen_generate(AST *root, SymTable *global, const char *outPath) {
     return 0;
 }
 
+/* =====================================================
+   INTERMEDIATE REPRESENTATION (IR) GENERATION
+   ===================================================== */
+
+int codegen_generate_ir(AST *root, SymTable *global, const char *outPath) {
+    if (!root || !outPath) return 1;
+    FILE *out = fopen(outPath, "w");
+    if (!out) return 1;
+
+    fprintf(out, "; Intermediate Representation (IR)\n");
+    fprintf(out, "; IR is a machine-independent representation between AST and assembly\n");
+    fprintf(out, "; Format: OPCODE [operands] [type info]\n\n");
+
+    /* IR generation is similar to assembly but with more abstract operations */
+    CodeGenContext cg;
+    cg_init(&cg, out);
+
+    FunctionContext fn = {0};
+    fn.cg = &cg;
+    fn.scope = global;
+
+    for (AST *p = root->child; p; p = p->sibling) {
+        if (p->kind == NODE_FUNC_DECL) {
+            fprintf(out, "FUNCTION %s\n", p->name ? p->name : "anon");
+            fprintf(out, "  PROLOGUE\n");
+            
+            SymTable *fnScope = symtable_find_scope(global, p->name, global);
+            if (!fnScope)
+                fnScope = symtable_find_scope(global, p->name, NULL);
+            
+            AST *body = p->extra;
+            if (body) {
+                for (AST *stmt = body->child; stmt; stmt = stmt->sibling) {
+                    if (stmt->kind == NODE_ASSIGN) {
+                        AST *lhs = stmt->child;
+                        fprintf(out, "  ASSIGN %s\n", lhs ? lhs->name : "?");
+                    } else if (stmt->kind == NODE_RETURN) {
+                        fprintf(out, "  RETURN\n");
+                    }
+                }
+            }
+            fprintf(out, "  EPILOGUE\n\n");
+        }
+    }
+
+    fclose(out);
+    return 0;
+}
+
+/* =====================================================
+   MACHINE CODE GENERATION (Relocatable and Absolute)
+   ===================================================== */
+
+/* Instruction opcodes for our register machine */
+typedef enum {
+    OP_NOP = 0x00,
+    OP_LOAD = 0x01,
+    OP_STORE = 0x02,
+    OP_LOADI = 0x03,
+    OP_LOADF = 0x04,
+    OP_MOV = 0x05,
+    OP_ADD = 0x10,
+    OP_SUB = 0x11,
+    OP_MUL = 0x12,
+    OP_DIV = 0x13,
+    OP_AND = 0x14,
+    OP_OR = 0x15,
+    OP_NOT = 0x16,
+    OP_NEG = 0x17,
+    OP_CMPEQ = 0x20,
+    OP_CMPNE = 0x21,
+    OP_CMPLT = 0x22,
+    OP_CMPGT = 0x23,
+    OP_CMPLE = 0x24,
+    OP_CMPGE = 0x25,
+    OP_JMP = 0x30,
+    OP_JZ = 0x31,
+    OP_CALL = 0x40,
+    OP_RET = 0x41,
+    OP_PUSH = 0x50,
+    OP_POP = 0x51,
+    OP_READ = 0x60,
+    OP_WRITE = 0x61
+} OpCode;
+
+typedef struct {
+    char *label;
+    int address;
+} LabelEntry;
+
+typedef struct {
+    int address;
+    char *symbol;
+    int type;  /* 0=absolute, 1=relative */
+} RelocEntry;
+
+static LabelEntry *labels = NULL;
+static int labelCount = 0;
+static RelocEntry *relocs = NULL;
+static int relocCount = 0;
+
+static int find_label_address(const char *label) {
+    for (int i = 0; i < labelCount; i++) {
+        if (labels[i].label && strcmp(labels[i].label, label) == 0)
+            return labels[i].address;
+    }
+    return -1;
+}
+
+static void add_reloc(int addr, const char *sym, int type) {
+    relocs = realloc(relocs, (relocCount + 1) * sizeof(RelocEntry));
+    relocs[relocCount].address = addr;
+    relocs[relocCount].symbol = strdup(sym);
+    relocs[relocCount].type = type;
+    relocCount++;
+}
+
+static int encode_instruction(FILE *out, OpCode op, int reg1, int reg2, int reg3, int imm, int is_relocatable, int is_absolute) {
+    int addr = ftell(out);
+    char opname[16];
+    
+    /* Map opcode to name */
+    switch (op) {
+        case OP_LOADI: strcpy(opname, "LOADI"); break;
+        case OP_ADD: strcpy(opname, "ADD"); break;
+        case OP_RET: strcpy(opname, "RET"); break;
+        case OP_JMP: strcpy(opname, "JMP"); break;
+        default: strcpy(opname, "UNKNOWN"); break;
+    }
+    
+    /* Write instruction in readable format */
+    fprintf(out, "  0x%04X: %s", addr, opname);
+    if (reg1 >= 0) fprintf(out, " R%d", reg1);
+    if (reg2 >= 0) fprintf(out, " R%d", reg2);
+    if (reg3 >= 0) fprintf(out, " R%d", reg3);
+    if (imm >= 0) {
+        if (is_relocatable) {
+            fprintf(out, " <RELOC>");
+            add_reloc(addr, "SYMBOL", 1);
+        } else {
+            if (is_absolute)
+                fprintf(out, " 0x%04X", imm);
+            else
+                fprintf(out, " %d", imm);
+        }
+    }
+    fprintf(out, "\n");
+    
+    return 4; /* Estimated instruction size */
+}
+
+int codegen_generate_relocatable(const char *asmPath, const char *outPath) {
+    FILE *in = fopen(asmPath, "r");
+    if (!in) return 1;
+    
+    FILE *out = fopen(outPath, "w");
+    if (!out) {
+        fclose(in);
+        return 1;
+    }
+
+    /* Write relocatable object file header (text format for readability) */
+    fprintf(out, "RELOCATABLE_OBJECT\n");
+    fprintf(out, "FORMAT_VERSION: 1.0\n");
+    fprintf(out, "ARCHITECTURE: SimpleRegisterMachine\n");
+    fprintf(out, "WORD_SIZE: 8\n\n");
+    fprintf(out, "CODE_SECTION:\n");
+
+    char line[256];
+    int address = 0;
+    
+    /* First pass: collect labels */
+    while (fgets(line, sizeof(line), in)) {
+        if (strstr(line, "FUNC_") && strstr(line, ":")) {
+            char label[64];
+            if (sscanf(line, "%63[^:]:", label) == 1) {
+                labels = realloc(labels, (labelCount + 1) * sizeof(LabelEntry));
+                labels[labelCount].label = strdup(label);
+                labels[labelCount].address = address;
+                labelCount++;
+            }
+        }
+        /* Estimate instruction size */
+        if (strstr(line, "LOAD") || strstr(line, "STORE") || strstr(line, "ADD") || strstr(line, "SUB"))
+            address += 4;
+        else if (strstr(line, "JMP") || strstr(line, "JZ") || strstr(line, "CALL"))
+            address += 4;
+        else if (strstr(line, "RET") || strstr(line, "PUSH") || strstr(line, "POP"))
+            address += 2;
+    }
+    
+    rewind(in);
+    address = 0;
+    
+    /* Second pass: generate code */
+    while (fgets(line, sizeof(line), in)) {
+        if (line[0] == ';' || line[0] == '\n') continue;
+        if (strstr(line, ":")) continue; /* Skip labels in binary output */
+        
+        int reg1 = -1, reg2 = -1, reg3 = -1, imm = -1;
+        
+        if (strstr(line, "LOADI")) {
+            if (sscanf(line, " LOADI R%d, %d", &reg1, &imm) == 2) {
+                encode_instruction(out, OP_LOADI, reg1, -1, -1, imm, 0, 0);
+                address += 4;
+            }
+        } else if (strstr(line, "ADD")) {
+            if (sscanf(line, " ADD R%d, R%d, R%d", &reg1, &reg2, &reg3) == 3) {
+                encode_instruction(out, OP_ADD, reg1, reg2, reg3, -1, 0, 0);
+                address += 4;
+            }
+        } else if (strstr(line, "RET")) {
+            encode_instruction(out, OP_RET, -1, -1, -1, -1, 0, 0);
+            address += 2;
+        } else if (strstr(line, "JMP")) {
+            char label[64];
+            if (sscanf(line, " JMP %63s", label) == 1) {
+                encode_instruction(out, OP_JMP, -1, -1, -1, 0, 1, 0);
+                add_reloc(address, label, 1);
+                address += 4;
+            }
+        }
+    }
+    
+    fprintf(out, "\nRELOCATION_TABLE:\n");
+    for (int i = 0; i < relocCount; i++) {
+        fprintf(out, "  %d: %s (type=%d)\n", relocs[i].address, relocs[i].symbol, relocs[i].type);
+    }
+    
+    fprintf(out, "\nSYMBOL_TABLE:\n");
+    for (int i = 0; i < labelCount; i++) {
+        fprintf(out, "  %s: %d\n", labels[i].label, labels[i].address);
+    }
+    
+    fclose(in);
+    fclose(out);
+    
+    /* Free memory */
+    for (int i = 0; i < labelCount; i++) free(labels[i].label);
+    for (int i = 0; i < relocCount; i++) free(relocs[i].symbol);
+    free(labels);
+    free(relocs);
+    labels = NULL;
+    relocs = NULL;
+    labelCount = relocCount = 0;
+    
+    return 0;
+}
+
+int codegen_generate_absolute(const char *asmPath, const char *outPath) {
+    FILE *in = fopen(asmPath, "r");
+    if (!in) return 1;
+    
+    FILE *out = fopen(outPath, "w");
+    if (!out) {
+        fclose(in);
+        return 1;
+    }
+
+    fprintf(out, "ABSOLUTE_OBJECT\n");
+    fprintf(out, "FORMAT_VERSION: 1.0\n");
+    fprintf(out, "ARCHITECTURE: SimpleRegisterMachine\n");
+    fprintf(out, "LOAD_ADDRESS: 0x1000\n\n");
+    fprintf(out, "CODE_SECTION:\n");
+
+    char line[256];
+    int baseAddress = 0x1000;
+    int address = baseAddress;
+    
+    /* Collect labels first */
+    while (fgets(line, sizeof(line), in)) {
+        if (strstr(line, "FUNC_") && strstr(line, ":")) {
+            char label[64];
+            if (sscanf(line, "%63[^:]:", label) == 1) {
+                labels = realloc(labels, (labelCount + 1) * sizeof(LabelEntry));
+                labels[labelCount].label = strdup(label);
+                labels[labelCount].address = address;
+                labelCount++;
+            }
+        }
+        if (strstr(line, "LOAD") || strstr(line, "STORE") || strstr(line, "ADD") || strstr(line, "SUB"))
+            address += 4;
+        else if (strstr(line, "JMP") || strstr(line, "JZ") || strstr(line, "CALL"))
+            address += 4;
+        else if (strstr(line, "RET") || strstr(line, "PUSH") || strstr(line, "POP"))
+            address += 2;
+    }
+    
+    rewind(in);
+    address = baseAddress;
+    
+    /* Generate absolute code with resolved addresses */
+    while (fgets(line, sizeof(line), in)) {
+        if (line[0] == ';' || line[0] == '\n') continue;
+        if (strstr(line, ":")) continue;
+        
+        int reg1 = -1, reg2 = -1, reg3 = -1, imm = -1;
+        
+        if (strstr(line, "LOADI")) {
+            if (sscanf(line, " LOADI R%d, %d", &reg1, &imm) == 2) {
+                encode_instruction(out, OP_LOADI, reg1, -1, -1, imm, 0, 1);
+                address += 4;
+            }
+        } else if (strstr(line, "ADD")) {
+            if (sscanf(line, " ADD R%d, R%d, R%d", &reg1, &reg2, &reg3) == 3) {
+                encode_instruction(out, OP_ADD, reg1, reg2, reg3, -1, 0, 1);
+                address += 4;
+            }
+        } else if (strstr(line, "RET")) {
+            encode_instruction(out, OP_RET, -1, -1, -1, -1, 0, 1);
+            address += 2;
+        } else if (strstr(line, "JMP")) {
+            char label[64];
+            if (sscanf(line, " JMP %63s", label) == 1) {
+                int targetAddr = find_label_address(label);
+                if (targetAddr < 0) targetAddr = address + 4; /* Default: next instruction */
+                encode_instruction(out, OP_JMP, -1, -1, -1, targetAddr, 0, 1);
+                address += 4;
+            }
+        }
+    }
+    
+    fprintf(out, "\nSYMBOL_TABLE:\n");
+    for (int i = 0; i < labelCount; i++) {
+        fprintf(out, "  %s: 0x%04X\n", labels[i].label, labels[i].address);
+    }
+    
+    fclose(in);
+    fclose(out);
+    
+    /* Free memory */
+    for (int i = 0; i < labelCount; i++) free(labels[i].label);
+    free(labels);
+    labels = NULL;
+    labelCount = 0;
+    
+    return 0;
+}
+

@@ -78,7 +78,7 @@ Symbol *symtable_lookup(SymTable *table, const char *name) {
 void symtable_add_param(Symbol *funcSym, const char *name, const char *typeName, int lineno) {
     Symbol *param = sym_new(name, typeName, SYM_PARAM, lineno);
     if (!funcSym->params) {
-        funcSym->params = param;
+    funcSym->params = param;
     } else {
         Symbol *tail = funcSym->params;
         while (tail->next) tail = tail->next;
@@ -124,7 +124,7 @@ void symtable_print_all(SymTable *global, FILE *out) {
             if (s->offset >= 0)
                 fprintf(out, "  %s\t%s\t%s\t(line %d)\toffset=%d size=%d\n", s->name, s->typeName? s->typeName:"<nil>", k, s->lineno, s->offset, s->size);
             else
-                fprintf(out, "  %s\t%s\t%s\t(line %d)\n", s->name, s->typeName? s->typeName:"<nil>", k, s->lineno);
+            fprintf(out, "  %s\t%s\t%s\t(line %d)\n", s->name, s->typeName? s->typeName:"<nil>", k, s->lineno);
             if (s->params) {
                 fprintf(out, "    params:");
                 for (Symbol *p = s->params; p; p = p->next) {

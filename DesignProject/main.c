@@ -4,7 +4,6 @@
 #include "symbol_table.h"
 #include "lexer_support.h"
 #include "codegen.h"
-#include "machine_code.h"
 
 /* parser exposes astRoot and yyparse/yyin */
 extern AST *astRoot;
@@ -88,21 +87,23 @@ int main(int argc, char **argv) {
     lex_support_finalize();
 
     if (semanticErrors == 0) {
+        /* Generate Intermediate Representation */
+        if (codegen_generate_ir(astRoot, globalTable, "codegen.ir") == 0) {
+            printf("Intermediate Representation written to codegen.ir\n");
+        }
+        
+        /* Generate Assembly Code */
         if (codegen_generate(astRoot, globalTable, "codegen.asm") == 0) {
-            printf("Code generation written to codegen.asm\n");
+            printf("Assembly code written to codegen.asm\n");
             
-            /* Generate relocatable machine code */
-            if (generate_relocatable_code("codegen.asm", "codegen_reloc.obj") == 0) {
-                printf("Relocatable machine code written to codegen_reloc.obj\n");
-                
-                /* Generate absolute machine code */
-                if (generate_absolute_code("codegen_reloc.obj", "codegen_abs.bin", 0x1000) == 0) {
-                    printf("Absolute machine code written to codegen_abs.bin\n");
-                } else {
-                    fprintf(stderr, "Absolute code generation failed.\n");
-                }
-            } else {
-                fprintf(stderr, "Relocatable code generation failed.\n");
+            /* Generate Relocatable Machine Code */
+            if (codegen_generate_relocatable("codegen.asm", "codegen.reloc") == 0) {
+                printf("Relocatable machine code written to codegen.reloc\n");
+            }
+            
+            /* Generate Absolute Machine Code */
+            if (codegen_generate_absolute("codegen.asm", "codegen.abs") == 0) {
+                printf("Absolute machine code written to codegen.abs\n");
             }
         } else {
             fprintf(stderr, "Code generation failed.\n");
@@ -116,7 +117,7 @@ int main(int argc, char **argv) {
 
     printf("Done. See lexer_tokens.txt, lexer_symbols.txt, semantic_errors.txt, symbol_table.txt");
     if (semanticErrors == 0) {
-        printf(", codegen.asm, codegen_reloc.obj, codegen_abs.bin");
+        printf(", codegen.ir, codegen.asm, codegen.reloc, codegen.abs");
     }
     printf("\n");
     return 0;

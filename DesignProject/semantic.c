@@ -332,10 +332,10 @@ static const char *resolve_type_of_expr(SymTable *curScope, AST *expr) {
 static void semantic_passB_visit(AST *node, SymTable *scope, const char *currentReturn);
 
 static void check_assignment(AST *node, SymTable *scope) {
-    AST *lhs = node->child;
-    AST *rhs = lhs ? lhs->sibling : NULL;
+            AST *lhs = node->child;
+            AST *rhs = lhs ? lhs->sibling : NULL;
 
-    if (!lhs || lhs->kind != NODE_ID) {
+            if (!lhs || lhs->kind != NODE_ID) {
         sem_error(node->lineno, "Left side of assignment must be an identifier");
         return;
     }
@@ -345,14 +345,14 @@ static void check_assignment(AST *node, SymTable *scope) {
     if (strcmp(lt, "<error>") == 0 || strcmp(rt, "<error>") == 0)
         return;
 
-    if (strcmp(lt, rt) != 0) {
+                    if (strcmp(lt, rt) != 0) {
         if (!(strcmp(lt, "float") == 0 && strcmp(rt, "int") == 0)) {
-            sem_error(node->lineno,
-                      "Type mismatch in assignment: left is %s, right is %s",
-                      lt, rt);
-        }
-    }
-}
+                            sem_error(node->lineno,
+                                      "Type mismatch in assignment: left is %s, right is %s",
+                                      lt, rt);
+                        }
+                    }
+                }
 
 static void check_condition(AST *condNode, SymTable *scope, const char *keyword) {
     const char *t = resolve_type_of_expr(scope, condNode);
@@ -385,19 +385,19 @@ static void semantic_passB_visit(AST *node, SymTable *scope, const char *current
             }
             case NODE_ASSIGN:
                 check_assignment(p, scope);
-                break;
-            case NODE_READ: {
+            break;
+        case NODE_READ: {
                 AST *v = p->child;
-                if (!v || v->kind != NODE_ID)
+            if (!v || v->kind != NODE_ID)
                     sem_error(p->lineno, "READ expects an identifier");
                 else if (!symtable_lookup(scope, v->name))
-                    sem_error(v->lineno, "READ on undeclared variable '%s'", v->name);
-                break;
-            }
+                sem_error(v->lineno, "READ on undeclared variable '%s'", v->name);
+            break;
+        }
             case NODE_WRITE:
                 (void)resolve_type_of_expr(scope, p->child);
                 break;
-            case NODE_RETURN: {
+        case NODE_RETURN: {
                 const char *exprType = resolve_type_of_expr(scope, p->child);
                 if (!currentReturn) {
                     sem_error(p->lineno, "RETURN outside of a function");
@@ -411,8 +411,8 @@ static void semantic_passB_visit(AST *node, SymTable *scope, const char *current
                                   currentReturn, exprType);
                     }
                 }
-                break;
-            }
+            break;
+        }
             case NODE_IF: {
                 AST *cond = p->child;
                 check_condition(cond, scope, "IF");
@@ -429,15 +429,15 @@ static void semantic_passB_visit(AST *node, SymTable *scope, const char *current
                 semantic_passB_visit(body, scope, currentReturn);
                 continue;
             }
-            case NODE_FUNCTION_CALL:
-            case NODE_BINARY_OP:
-            case NODE_UNARY_OP:
-            case NODE_ID:
+        case NODE_FUNCTION_CALL:
+        case NODE_BINARY_OP:
+        case NODE_UNARY_OP:
+        case NODE_ID:
                 (void)resolve_type_of_expr(scope, p);
-                break;
-            default:
-                break;
-        }
+            break;
+        default:
+            break;
+    }
 
         if (p->child)
             semantic_passB_visit(p->child, scope, currentReturn);
@@ -448,7 +448,7 @@ static void semantic_passB_visit(AST *node, SymTable *scope, const char *current
 
 void semantic_passB(AST *root) {
     semantic_passB_visit(root, globalTable, NULL);
-}
+        }
 
 int semantic_error_total(void) {
     return errorCount;
