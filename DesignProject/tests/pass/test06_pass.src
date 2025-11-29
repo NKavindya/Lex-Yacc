@@ -1,0 +1,22 @@
+func compare(a : int, b : int) -> int {
+    if (a == b) then {
+        return(0);
+    } else {
+        if (a < b) then {
+            return(-1);
+        } else {
+            return(1);
+        }
+    }
+}
+
+func arithmetic(x : int, y : int) -> int {
+    local sum : int;
+    local diff : int;
+    local prod : int;
+    sum := x + y;
+    diff := x - y;
+    prod := x * y;
+    return(sum + diff + prod);
+}
+

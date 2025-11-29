@@ -1,0 +1,10 @@
+func max(a : int, b : int) -> int {
+    local result : int;
+    if (a > b) then {
+        result := a;
+    } else {
+        result := b;
+    }
+    return(result);
+}
+

@@ -20,30 +20,52 @@ Our compiler implements all four phases.
 
 **Architecture**: Simple Register Machine (Hypothetical/Educational)
 
-Our compiler targets a **hypothetical register machine** designed for educational purposes, not a real architecture like x86, ARM, MIPS, or RISC-V. This choice allows us to focus on compiler concepts without the complexity of real processor architectures.
+Our compiler targets a **Simple Register Machine architecture** designed for educational purposes. This is a hypothetical architecture that allows us to focus on compiler concepts without the complexity of real processor architectures like x86, ARM, or MIPS.
 
 **Architecture Specifications:**
-- **Type**: RISC-like (Reduced Instruction Set Computer)
+- **Type**: RISC-like (Reduced Instruction Set Computer) - simplified for education
+- **Bit Width**: 64-bit (8-byte words)
 - **Registers**: 
   - 7 general-purpose registers: R1, R2, R3, R4, R5, R6, R7
   - 1 dedicated return register: R0
   - Special registers: FP (Frame Pointer), SP (Stack Pointer), RA (Return Address)
 - **Word Size**: 8 bytes (64 bits)
 - **Memory Model**: Stack-based with frame pointers
-- **Instruction Set**: Simple, high-level instructions (LOAD, STORE, ADD, SUB, JMP, CALL, RET, etc.)
+- **Calling Convention**: Simple stack-based convention
+  - Parameters passed on stack
+  - Return address saved in RA
+  - Frame pointer (FP) tracks current stack frame
+  - Return value in R0
+- **Instruction Set**: Simple, high-level instructions
+  - Data Movement: `LOAD`, `STORE`, `LOADI`, `LOADF`, `MOV`, `PUSH`, `POP`
+  - Arithmetic: `ADD`, `SUB`, `MUL`, `DIV`
+  - Comparison: `CMPEQ`, `CMPNE`, `CMPLT`, `CMPGT`, `CMPLE`, `CMPGE`
+  - Logical: `AND`, `OR`, `NOT`, `NEG`
+  - Control Flow: `JMP`, `JZ`, `CALL`, `RET`
+  - I/O: `READ`, `WRITE`
 
-**Why Not Real Architectures?**
-- **Educational Focus**: Simplifies learning compiler concepts
-- **Portability**: Not tied to any specific processor
-- **Completeness**: Still demonstrates all code generation concepts
+**Why a Simple Register Machine?**
+- **Educational Focus**: Simplifies learning compiler concepts without architecture complexity
+- **Portability**: Not tied to any specific real processor
+- **Completeness**: Still demonstrates all code generation concepts (registers, stack, calling conventions)
 - **Clarity**: Easier to understand than x86/ARM instruction encoding
+- **Custom Formats**: Allows custom IR, relocatable, and absolute machine code formats
+
+**Architecture Characteristics:**
+- **Simple Instructions**: Fixed-format, easy-to-understand instructions
+- **Stack-Based**: Uses stack for function calls and local variables
+- **Frame Pointer**: FP points to current stack frame
+- **Memory Addressing**: `[FP-offset]` for all stack-allocated variables
+- **Register Allocation**: Simple linear scan allocation (R1-R7)
 
 **Comparison to Real Architectures:**
-- **x86/x86-64**: CISC, complex instruction encoding, variable-length instructions
+- **x86/x86-64**: CISC, complex instruction encoding, variable-length instructions, real-world
 - **ARM**: RISC, fixed-length 32-bit instructions, real-world mobile/embedded
-- **MIPS**: RISC, educational, fixed-length instructions
+- **MIPS**: RISC, educational, fixed-length instructions, often used in courses
 - **RISC-V**: Open-source RISC, modular design
-- **Our Machine**: Simplified RISC-like, designed for compiler education
+- **Our Machine**: Simplified RISC-like, designed specifically for compiler education
+
+**Note**: This architecture is similar to teaching architectures used in compiler courses (like the "Dragon Book" simple machine, Stanford MiniJava compiler target, or simplified MIPS/RISC-V subsets). It provides a clean abstraction for learning compiler concepts while remaining simple enough to understand completely.
 
 ---
 
@@ -247,14 +269,14 @@ PROGRAM
 
 **What it does**:
 - **IR Generation**: Creates Intermediate Representation (machine-independent code)
-- **Assembly Generation**: Traverses the AST and emits assembly instructions
+- **Assembly Generation**: Traverses the AST and emits x86 assembly instructions
 - **Relocatable Code**: Generates machine code with unresolved symbols (for linking)
 - **Absolute Code**: Generates machine code with all addresses resolved
 - Manages register allocation (7 general-purpose registers R1-R7, plus R0 for return value)
-- Generates function prologues/epilogues (save/restore frame pointer, allocate stack space)
-- Converts expressions to arithmetic operations
-- Generates control flow (if-then-else, while loops) using labels and jumps
-- Handles function calls (push arguments, call, get return value)
+- Generates function prologues/epilogues (PUSH RA, PUSH FP, MOV FP SP, SUB SP frame_size)
+- Converts expressions to arithmetic operations (ADD, SUB, MUL, DIV, CMPEQ, etc.)
+- Generates control flow (if-then-else, while loops) using jumps (JMP, JZ)
+- Handles function calls (PUSH args, CALL, ADD SP cleanup)
 
 **Code Generation Phases:**
 
@@ -290,8 +312,9 @@ PROGRAM
 
 **Memory Access**:
 - Local variables: `[FP-offset]` (Frame Pointer minus offset)
-- Parameters: Also accessed via `[FP-offset]`
+- Parameters: Also accessed via `[FP-offset]` (stack-based)
 - Stack-based calling convention
+- Global variables: Absolute addresses `[label]`
 
 **Key Functions**:
 - `codegen_generate_ir()`: Generates Intermediate Representation
@@ -303,7 +326,7 @@ PROGRAM
 - `cg_generate_statement()`: Generates code for statements
 - `cg_generate_if()` / `cg_generate_while()`: Control flow generation
 
-**For beginners**: This is like translating a recipe from English to another language. The AST says "add a and b", and the code generator writes "LOAD R1, [FP-8] ; a" followed by "ADD R1, R1, R2" to perform the addition in assembly. Then it converts this to machine code formats.
+**For beginners**: This is like translating a recipe from English to another language. The AST says "add a and b", and the code generator writes assembly: `LOAD R1, [FP-8] ; a` followed by `ADD R1, R1, R2 ; b` to perform the addition. Then it converts this to relocatable and absolute machine code formats.
 
 **Outputs**: 
 - `codegen.ir` - Intermediate Representation

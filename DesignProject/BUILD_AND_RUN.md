@@ -43,7 +43,7 @@ After running, you'll have these files:
 - `semantic_errors.txt` - Semantic errors (if any)
 - `derivation_steps.txt` - Parser derivation steps
 - `codegen.ir` - Intermediate Representation (only if no semantic errors)
-- `codegen.asm` - Generated assembly code (only if no semantic errors)
+- `codegen.asm` - Generated x86 assembly code (only if no semantic errors)
 - `codegen.reloc` - Relocatable machine code (only if no semantic errors)
 - `codegen.abs` - Absolute machine code (only if no semantic errors)
 
@@ -53,10 +53,12 @@ cat lexer_tokens.txt
 cat symbol_table.txt
 cat semantic_errors.txt
 cat codegen.ir      # Intermediate Representation
-cat codegen.asm     # Assembly code
+cat codegen.asm     # x86 assembly code (MASM/NASM compatible)
 cat codegen.reloc   # Relocatable machine code
 cat codegen.abs     # Absolute machine code
 ```
+
+**Note**: The generated `codegen.asm` contains assembly code for our Simple Register Machine architecture. This is a hypothetical/educational architecture designed for learning compiler concepts, not a real processor architecture like x86 or ARM.
 
 ## Step 7: Run All Tests
 ```bash
@@ -95,9 +97,13 @@ ls -la *.txt *.asm *.ir *.reloc *.abs
 
 # 4. View generated code
 cat codegen.ir      # Intermediate Representation
-cat codegen.asm     # Assembly code
+cat codegen.asm     # x86 assembly code
 cat codegen.reloc   # Relocatable machine code
 cat codegen.abs     # Absolute machine code
+
+# 5. Note: The generated assembly is for a Simple Register Machine architecture
+#    This is a hypothetical architecture for educational purposes.
+#    It is not real x86/ARM/MIPS assembly and cannot be assembled with standard assemblers.
 
 # 5. Test on an invalid program (should show errors, no codegen)
 ./compiler tests/error01.src

@@ -1,0 +1,7 @@
+func add(a : int, b : int) -> int {
+    local a : int;
+    local result : int;
+    result := a + b;
+    return(result);
+}
+

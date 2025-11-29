@@ -1,0 +1,26 @@
+func add(a : int, b : int) -> int {
+    local result : int;
+    result := a + b;
+    return(result);
+}
+
+func test() -> void {
+    local x : int;
+    x := add(5, 10);
+    return(x);
+}
+
+func compute(a : int, b : float) -> int {
+    local sum : int;
+    sum := a + b;
+    return(sum);
+}
+
+func invalid() -> int {
+    local x : int;
+    if ("hello") then {
+        x := 5;
+    }
+    return(x);
+}
+

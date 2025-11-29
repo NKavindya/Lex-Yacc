@@ -1,13 +1,16 @@
 #include "codegen.h"
+#include "symbol_table.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 
-#define REG_POOL 7
-#define WORD_SIZE 8
+/* Simple Register Machine Architecture Configuration */
+#define REG_POOL 7  /* R1-R7 (R0 is dedicated return register) */
+#define WORD_SIZE 8  /* 8 bytes per word */
 
-static const char *REG_NAMES[REG_POOL] = {"R1","R2","R3","R4","R5","R6","R7"};
+/* Simple Register Machine Registers */
+static const char *REG_NAMES[REG_POOL] = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"};
 
 typedef struct {
     FILE *out;
@@ -312,7 +315,8 @@ int codegen_generate(AST *root, SymTable *global, const char *outPath) {
 
     CodeGenContext cg;
     cg_init(&cg, out);
-    cg_emit(&cg, "; Auto-generated assembly\n\n");
+    cg_emit(&cg, "; Auto-generated assembly\n");
+    cg_emit(&cg, "; Target: Simple Register Machine Architecture\n\n");
 
     FunctionContext fn = {0};
     fn.cg = &cg;
@@ -344,7 +348,6 @@ int codegen_generate_ir(AST *root, SymTable *global, const char *outPath) {
     fprintf(out, "; IR is a machine-independent representation between AST and assembly\n");
     fprintf(out, "; Format: OPCODE [operands] [type info]\n\n");
 
-    /* IR generation is similar to assembly but with more abstract operations */
     CodeGenContext cg;
     cg_init(&cg, out);
 
@@ -384,7 +387,7 @@ int codegen_generate_ir(AST *root, SymTable *global, const char *outPath) {
    MACHINE CODE GENERATION (Relocatable and Absolute)
    ===================================================== */
 
-/* Instruction opcodes for our register machine */
+/* Instruction opcodes for Simple Register Machine */
 typedef enum {
     OP_NOP = 0x00,
     OP_LOAD = 0x01,
@@ -492,7 +495,6 @@ int codegen_generate_relocatable(const char *asmPath, const char *outPath) {
         return 1;
     }
 
-    /* Write relocatable object file header (text format for readability) */
     fprintf(out, "RELOCATABLE_OBJECT\n");
     fprintf(out, "FORMAT_VERSION: 1.0\n");
     fprintf(out, "ARCHITECTURE: SimpleRegisterMachine\n");
@@ -513,7 +515,6 @@ int codegen_generate_relocatable(const char *asmPath, const char *outPath) {
                 labelCount++;
             }
         }
-        /* Estimate instruction size */
         if (strstr(line, "LOAD") || strstr(line, "STORE") || strstr(line, "ADD") || strstr(line, "SUB"))
             address += 4;
         else if (strstr(line, "JMP") || strstr(line, "JZ") || strstr(line, "CALL"))
@@ -528,7 +529,7 @@ int codegen_generate_relocatable(const char *asmPath, const char *outPath) {
     /* Second pass: generate code */
     while (fgets(line, sizeof(line), in)) {
         if (line[0] == ';' || line[0] == '\n') continue;
-        if (strstr(line, ":")) continue; /* Skip labels in binary output */
+        if (strstr(line, ":")) continue;
         
         int reg1 = -1, reg2 = -1, reg3 = -1, imm = -1;
         
@@ -568,7 +569,6 @@ int codegen_generate_relocatable(const char *asmPath, const char *outPath) {
     fclose(in);
     fclose(out);
     
-    /* Free memory */
     for (int i = 0; i < labelCount; i++) free(labels[i].label);
     for (int i = 0; i < relocCount; i++) free(relocs[i].symbol);
     free(labels);
@@ -622,7 +622,7 @@ int codegen_generate_absolute(const char *asmPath, const char *outPath) {
     rewind(in);
     address = baseAddress;
     
-    /* Generate absolute code with resolved addresses */
+    /* Generate absolute code */
     while (fgets(line, sizeof(line), in)) {
         if (line[0] == ';' || line[0] == '\n') continue;
         if (strstr(line, ":")) continue;
@@ -646,7 +646,7 @@ int codegen_generate_absolute(const char *asmPath, const char *outPath) {
             char label[64];
             if (sscanf(line, " JMP %63s", label) == 1) {
                 int targetAddr = find_label_address(label);
-                if (targetAddr < 0) targetAddr = address + 4; /* Default: next instruction */
+                if (targetAddr < 0) targetAddr = address + 4;
                 encode_instruction(out, OP_JMP, -1, -1, -1, targetAddr, 0, 1);
                 address += 4;
             }
@@ -661,7 +661,6 @@ int codegen_generate_absolute(const char *asmPath, const char *outPath) {
     fclose(in);
     fclose(out);
     
-    /* Free memory */
     for (int i = 0; i < labelCount; i++) free(labels[i].label);
     free(labels);
     labels = NULL;
@@ -669,4 +668,3 @@ int codegen_generate_absolute(const char *asmPath, const char *outPath) {
     
     return 0;
 }
-

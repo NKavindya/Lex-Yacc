@@ -1,0 +1,16 @@
+class Calculator {
+    attribute value : int;
+    
+    func setValue(v : int) -> void {
+        value := v;
+    }
+    
+    func getValue() -> int {
+        return(value);
+    }
+    
+    func increment() -> void {
+        value := value + 1;
+    }
+}
+

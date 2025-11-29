@@ -1,0 +1,14 @@
+func getInt() -> int {
+    return(42);
+}
+
+func test() -> float {
+    local x : float;
+    x := getInt();
+    return(x);
+}
+
+func wrongReturn() -> int {
+    return(3.14);
+}
+

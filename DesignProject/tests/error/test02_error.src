@@ -1,0 +1,6 @@
+func compute(a : int, b : int) -> int {
+    local result : int;
+    result := a + "hello";
+    return(result);
+}
+
