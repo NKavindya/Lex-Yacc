@@ -1,0 +1,23 @@
+// Test 5: Unary operators and sign operations
+func calculate(x : integer, y : integer) -> integer {
+    local positive : integer;
+    local negative : integer;
+    local result : integer;
+    
+    positive := +x;
+    negative := -y;
+    result := positive + negative;
+    
+    return(result);
+}
+
+func testUnary() -> void {
+    local a : integer;
+    local b : integer;
+    
+    a := 10;
+    b := 5;
+    write(+a);
+    write(-b);
+}
+

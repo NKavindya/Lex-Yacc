@@ -1,0 +1,11 @@
+// Error Test 5: Semantic error - redeclaration
+func test() -> void {
+    local x : integer;
+    local x : float;  // Redeclaration of x
+    local y : integer;
+    
+    x := 10;
+    y := 20;
+    write(x);
+}
+

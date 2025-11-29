@@ -1,0 +1,11 @@
+// Error Test 6: Syntax error - invalid expression and missing operator
+func invalid() -> integer {
+    local a : integer;
+    local b : integer;
+    
+    a := 10;
+    b := 5;
+    a := a b;  // Missing operator between a and b
+    return(a);
+}
+

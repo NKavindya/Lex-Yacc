@@ -1,0 +1,24 @@
+// Test 4: Control flow with if-else and while loops
+func max(a : integer, b : integer) -> integer {
+    if (a > b) then {
+        return(a);
+    } else {
+        return(b);
+    }
+}
+
+func factorial(n : integer) -> integer {
+    local result : integer;
+    local i : integer;
+    
+    result := 1;
+    i := 1;
+    
+    while (i <= n) {
+        result := result * i;
+        i := i + 1;
+    }
+    
+    return(result);
+}
+

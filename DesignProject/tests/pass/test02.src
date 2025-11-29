@@ -1,0 +1,21 @@
+// Test 2: Nested object access and method calls
+class Person {
+    public attribute name : integer;
+    public attribute age : integer;
+    
+    public func getName() -> integer;
+    public func getAge() -> integer;
+};
+
+class Company {
+    public attribute employee : Person;
+    
+    public func getEmployeeName() -> integer;
+};
+
+implement Company {
+    func getEmployeeName() -> integer {
+        return(employee.getName());
+    }
+};
+

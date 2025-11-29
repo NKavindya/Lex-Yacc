@@ -1,0 +1,10 @@
+// Error Test 3: Semantic error - undeclared variable
+func calculate() -> integer {
+    local a : integer;
+    local result : integer;
+    
+    a := 10;
+    result := a + b;  // b is not declared
+    return(result);
+}
+

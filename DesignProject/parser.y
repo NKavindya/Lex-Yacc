@@ -41,50 +41,46 @@ AST *astRoot = NULL;
 
 /* nonterminals carry AST */
 %type <node> statBlock statementList expr exprPrime relExpr arithExpr arithExprPrime term termPrime factor functionCall
-%type <node> prog classDecl classInherit moreIds classBody implDef implFuncs
+%type <node> prog classOrImplOrFunc classDecl classInherit moreIds classBody memberDecl funcDecl implDef implFuncs
 %type <node> funcDef funcHead funcBody varDeclOrStmtList varDeclOrStmt
 %type <node> localVarDecl attributeDecl varDecl arraySizes arraySize statement assignStat
+%type <node> variable idnest idnestList idOrSelf indice indiceList
 %type <node> fParams fParamsTailList aParams aParamsTailList type returnType
-%type <sVal> addOp multOp
+%type <sVal> addOp multOp sign
 
 %%
 
-/* top-level */
+/* top-level - LL(1) right-recursive form: prog -> classOrImplOrFunc prog | epsilon */
 prog:
-      classDecl
+      classOrImplOrFunc prog
       {
-          log_production("prog -> classDecl");
-          astRoot = ast_new(NODE_PROGRAM, NULL, @1.first_line);
-          ast_append_child(astRoot, $1);
-      }
-    | classDecl prog
-      {
-          log_production("prog -> classDecl prog");
+          log_production("prog -> classOrImplOrFunc prog");
           if (!astRoot) astRoot = ast_new(NODE_PROGRAM, NULL, @1.first_line);
-          ast_append_child(astRoot, $1);
-      }
-    | funcDef
-      {
-          log_production("prog -> funcDef");
-          astRoot = ast_new(NODE_PROGRAM, NULL, @1.first_line);
-          ast_append_child(astRoot, $1);
-      }
-    | funcDef prog
-      {
-          log_production("prog -> funcDef prog");
-          if (!astRoot) astRoot = ast_new(NODE_PROGRAM, NULL, @1.first_line);
-          ast_append_child(astRoot, $1);
-      }
-    | implDef
-      {
-          log_production("prog -> implDef");
-          if (!astRoot) astRoot = ast_new(NODE_PROGRAM, NULL, @1.first_line);
-          ast_append_child(astRoot, $1);
+          if ($1) ast_append_child(astRoot, $1);
       }
     | /* empty */
       {
           log_production("prog -> epsilon");
           astRoot = ast_new(NODE_PROGRAM, NULL, 0);
+      }
+;
+
+/* classOrImplOrFunc -> classDecl | implDef | funcDef */
+classOrImplOrFunc:
+      classDecl
+      {
+          log_production("classOrImplOrFunc -> classDecl");
+          $$ = $1;
+      }
+    | implDef
+      {
+          log_production("classOrImplOrFunc -> implDef");
+          $$ = $1;
+      }
+    | funcDef
+      {
+          log_production("classOrImplOrFunc -> funcDef");
+          $$ = $1;
       }
 ;
 
@@ -132,11 +128,11 @@ moreIds:
       }
 ;
 
-/* classBody */
+/* classBody - LL(1) right-recursive: classBody -> visibility memberDecl classBody | epsilon */
 classBody:
-      PUBLIC attributeDecl classBody
+      PUBLIC memberDecl classBody
       {
-          log_production("classBody -> PUBLIC attributeDecl classBody");
+          log_production("classBody -> PUBLIC memberDecl classBody");
           if ($2) {
               if ($2->typeName) free($2->typeName);
               $2->typeName = strdup("public");
@@ -144,9 +140,9 @@ classBody:
           if ($3) ast_append_sibling(&$2, $3);
           $$ = $2;
       }
-    | PRIVATE attributeDecl classBody
+    | PRIVATE memberDecl classBody
       {
-          log_production("classBody -> PRIVATE attributeDecl classBody");
+          log_production("classBody -> PRIVATE memberDecl classBody");
           if ($2) {
               if ($2->typeName) free($2->typeName);
               $2->typeName = strdup("private");
@@ -158,6 +154,29 @@ classBody:
       {
           log_production("classBody -> epsilon");
           $$ = NULL;
+      }
+;
+
+/* memberDecl -> funcDecl | attributeDecl */
+memberDecl:
+      funcDecl
+      {
+          log_production("memberDecl -> funcDecl");
+          $$ = $1;
+      }
+    | attributeDecl
+      {
+          log_production("memberDecl -> attributeDecl");
+          $$ = $1;
+      }
+;
+
+/* funcDecl -> funcHead ; */
+funcDecl:
+      funcHead SEMICOLON
+      {
+          log_production("funcDecl -> funcHead ;");
+          $$ = $1;
       }
 ;
 
@@ -322,13 +341,22 @@ statement:
           log_production("statement -> assignStat ;");
           $$ = $1;
       }
-    | IF LPAREN expr RPAREN THEN statBlock ELSE statBlock
+    | IF LPAREN expr RPAREN THEN statBlock ELSE statBlock SEMICOLON
       {
-          log_production("statement -> IF ( expr ) THEN statBlock ELSE statBlock");
+          log_production("statement -> IF ( expr ) THEN statBlock ELSE statBlock ;");
           AST *node = ast_new(NODE_IF, NULL, @1.first_line);
           ast_append_child(node, $3);
           ast_append_child(node, $6);
           ast_append_child(node, $8);
+          $$ = node;
+      }
+    | IF LPAREN expr RPAREN THEN statBlock SEMICOLON
+      {
+          log_production("statement -> IF ( expr ) THEN statBlock ;");
+          AST *node = ast_new(NODE_IF, NULL, @1.first_line);
+          ast_append_child(node, $3);
+          ast_append_child(node, $6);
+          /* else block is NULL */
           $$ = node;
       }
     | WHILE LPAREN expr RPAREN statBlock SEMICOLON
@@ -339,12 +367,11 @@ statement:
           ast_append_child(node, $5);
           $$ = node;
       }
-    | READ LPAREN ID RPAREN SEMICOLON
+    | READ LPAREN variable RPAREN SEMICOLON
       {
-          log_production("statement -> READ ( id ) ;");
+          log_production("statement -> READ ( variable ) ;");
           AST *n = ast_new(NODE_READ, NULL, @1.first_line);
-          AST *idn = ast_new(NODE_ID, $3, @3.first_line);
-          ast_append_child(n, idn);
+          ast_append_child(n, $3);
           $$ = n;
       }
     | WRITE LPAREN expr RPAREN SEMICOLON
@@ -376,12 +403,11 @@ statement:
 ;
 
 assignStat:
-      ID ASSIGN expr
+      variable ASSIGN expr
       {
-          log_production("assignStat -> id ASSIGN expr");
-          AST *lhs = ast_new(NODE_ID, $1, @1.first_line);
+          log_production("assignStat -> variable ASSIGN expr");
           AST *assign = ast_new(NODE_ASSIGN, NULL, @1.first_line);
-          ast_append_child(assign, lhs);
+          ast_append_child(assign, $1);
           ast_append_child(assign, $3);
           $$ = assign;
       }
@@ -584,6 +610,11 @@ addOp:
           log_production("addOp -> -");
           $$ = strdup("-");
       }
+    | OR
+      {
+          log_production("addOp -> or");
+          $$ = strdup("or");
+      }
 ;
 
 term:
@@ -646,17 +677,15 @@ multOp:
 ;
 
 factor:
-      NOT factor
+      variable
       {
-          log_production("factor -> NOT factor");
-          AST *n = ast_new(NODE_UNARY_OP, "not", @1.first_line);
-          ast_append_child(n, $2);
-          $$ = n;
+          log_production("factor -> variable");
+          $$ = $1;
       }
-    | ID
+    | functionCall
       {
-          log_production("factor -> id");
-          $$ = ast_new(NODE_ID, $1, @1.first_line);
+          log_production("factor -> functionCall");
+          $$ = $1;
       }
     | INT_LIT
       {
@@ -672,45 +701,188 @@ factor:
           n->floatValue = $1;
           $$ = n;
       }
-    | STRING_LIT
-      {
-          log_production("factor -> STRING_LIT");
-          $$ = ast_new(NODE_STRING_LITERAL, $1, @1.first_line);
-      }
     | LPAREN arithExpr RPAREN
       {
           log_production("factor -> ( arithExpr )");
           $$ = $2;
       }
-    | functionCall
+    | NOT factor
       {
-          log_production("factor -> functionCall");
-          $$ = $1;
+          log_production("factor -> NOT factor");
+          AST *n = ast_new(NODE_UNARY_OP, "not", @1.first_line);
+          ast_append_child(n, $2);
+          $$ = n;
+      }
+    | sign factor
+      {
+          log_production("factor -> sign factor");
+          AST *n = ast_new(NODE_UNARY_OP, $1, @1.first_line);
+          ast_append_child(n, $2);
+          free($1);
+          $$ = n;
       }
 ;
 
-/* function call */
-functionCall:
-      ID LPAREN aParams RPAREN
+/* sign -> + | - */
+sign:
+      PLUS
       {
-          log_production("functionCall -> id ( aParams )");
-          AST *c = ast_new(NODE_FUNCTION_CALL, $1, @1.first_line);
-          if ($3) c->child = $3;
+          log_production("sign -> +");
+          $$ = strdup("+");
+      }
+    | MINUS
+      {
+          log_production("sign -> -");
+          $$ = strdup("-");
+      }
+;
+
+/* function call - functionCall -> idnestList id ( aParams ) */
+functionCall:
+      idnestList ID LPAREN aParams RPAREN
+      {
+          log_production("functionCall -> idnestList id ( aParams )");
+          AST *c = ast_new(NODE_FUNCTION_CALL, $2, @2.first_line);
+          if ($1) {
+              /* Attach idnest chain as first child, then aParams */
+              c->child = $1;
+              if ($4) {
+                  if ($1->sibling) {
+                      AST *last = $1;
+                      while (last->sibling) last = last->sibling;
+                      last->sibling = $4;
+                  } else {
+                      $1->sibling = $4;
+                  }
+              }
+          } else if ($4) {
+              c->child = $4;
+          }
           $$ = c;
+      }
+;
+
+/* variable -> idnestList id indiceList */
+variable:
+      idnestList ID indiceList
+      {
+          log_production("variable -> idnestList id indiceList");
+          AST *var = ast_new(NODE_ID, $2, @2.first_line);
+          if ($1) {
+              /* Build chain: idnestList -> id -> indiceList */
+              AST *last = $1;
+              while (last->sibling) last = last->sibling;
+              last->sibling = var;
+              var = $1;
+          }
+          if ($3) {
+              /* Attach indices to the variable */
+              if (var->sibling) {
+                  AST *last = var;
+                  while (last->sibling) last = last->sibling;
+                  last->sibling = $3;
+              } else {
+                  var->sibling = $3;
+              }
+          }
+          $$ = var;
+      }
+;
+
+/* idnestList -> idnest idnestList | epsilon */
+idnestList:
+      idnest idnestList
+      {
+          log_production("idnestList -> idnest idnestList");
+          AST *head = $1;
+          if ($2) ast_append_sibling(&head, $2);
+          $$ = head;
+      }
+    | /* empty */
+      {
+          log_production("idnestList -> epsilon");
+          $$ = NULL;
+      }
+;
+
+/* idnest -> idOrSelf indiceList . | idOrSelf ( aParams ) . */
+idnest:
+      idOrSelf indiceList DOT
+      {
+          log_production("idnest -> idOrSelf indiceList .");
+          AST *n = $1;
+          if ($2) {
+              if (n->sibling) {
+                  AST *last = n;
+                  while (last->sibling) last = last->sibling;
+                  last->sibling = $2;
+              } else {
+                  n->sibling = $2;
+              }
+          }
+          $$ = n;
+      }
+    | idOrSelf LPAREN aParams RPAREN DOT
+      {
+          log_production("idnest -> idOrSelf ( aParams ) .");
+          AST *call = ast_new(NODE_FUNCTION_CALL, $1->name, @1.first_line);
+          call->child = $3;
+          $$ = call;
+      }
+;
+
+/* idOrSelf -> id | self */
+idOrSelf:
+      ID
+      {
+          log_production("idOrSelf -> id");
+          $$ = ast_new(NODE_ID, $1, @1.first_line);
+      }
+    | SELF
+      {
+          log_production("idOrSelf -> self");
+          $$ = ast_new(NODE_ID, "self", @1.first_line);
+      }
+;
+
+/* indiceList -> indice indiceList | epsilon */
+indiceList:
+      indice indiceList
+      {
+          log_production("indiceList -> indice indiceList");
+          AST *head = $1;
+          if ($2) ast_append_sibling(&head, $2);
+          $$ = head;
+      }
+    | /* empty */
+      {
+          log_production("indiceList -> epsilon");
+          $$ = NULL;
+      }
+;
+
+/* indice -> [ arithExpr ] */
+indice:
+      LBRACKET arithExpr RBRACKET
+      {
+          log_production("indice -> [ arithExpr ]");
+          AST *idx = ast_new(NODE_BINARY_OP, "[]", @1.first_line);
+          ast_append_child(idx, $2);
+          $$ = idx;
       }
 ;
 
 /* parameter lists */
 fParams:
-      ID COLON type fParamsTailList
+      ID COLON type arraySizes fParamsTailList
       {
-          log_production("fParams -> id : type fParamsTailList");
+          log_production("fParams -> id : type arraySizes fParamsTailList");
           AST *p = ast_new(NODE_PARAM, $1, @1.first_line);
           if ($3) {
               p->typeName = $3->name ? strdup($3->name) : NULL;
               ast_free($3);
           }
-          if ($4) ast_append_sibling(&p, $4);
+          if ($5) ast_append_sibling(&p, $5);
           $$ = p;
       }
     | /* empty */
@@ -721,15 +893,15 @@ fParams:
 ;
 
 fParamsTailList:
-      COMMA ID COLON type fParamsTailList
+      COMMA ID COLON type arraySizes fParamsTailList
       {
-          log_production("fParamsTailList -> , id : type fParamsTailList");
+          log_production("fParamsTailList -> , id : type arraySizes fParamsTailList");
           AST *p = ast_new(NODE_PARAM, $2, @2.first_line);
           if ($4) {
               p->typeName = $4->name ? strdup($4->name) : NULL;
               ast_free($4);
           }
-          if ($5) ast_append_sibling(&p, $5);
+          if ($6) ast_append_sibling(&p, $6);
           $$ = p;
       }
     | /* empty */

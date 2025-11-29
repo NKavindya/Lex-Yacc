@@ -1,0 +1,8 @@
+// Error Test 2: Syntax error - unmatched braces
+class MyClass {
+    public attribute x : integer;
+    public func getX() -> integer {
+        return(x);
+    }
+// Missing closing brace
+

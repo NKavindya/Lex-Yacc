@@ -1,0 +1,11 @@
+// Error Test 4: Semantic error - type mismatch
+func process() -> void {
+    local x : integer;
+    local y : float;
+    
+    x := 10;
+    y := 5.5;
+    x := y;  // Type mismatch: cannot assign float to integer
+    write(x);
+}
+

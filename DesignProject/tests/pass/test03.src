@@ -1,0 +1,26 @@
+// Test 3: Array operations and indexing
+func processArray(arr : integer [], size : integer) -> integer {
+    local sum : integer;
+    local i : integer;
+    
+    sum := 0;
+    i := 0;
+    
+    while (i < size) {
+        sum := sum + arr[i];
+        i := i + 1;
+    }
+    
+    return(sum);
+}
+
+func main() -> void {
+    local numbers : integer[10];
+    local result : integer;
+    
+    numbers[0] := 5;
+    numbers[1] := 10;
+    result := processArray(numbers, 2);
+    write(result);
+}
+

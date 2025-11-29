@@ -1,0 +1,7 @@
+// Error Test 1: Syntax error - missing semicolon
+func add(a : integer, b : integer) -> integer {
+    local result : integer
+    result := a + b
+    return(result);
+}
+
