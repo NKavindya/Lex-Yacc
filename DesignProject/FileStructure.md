@@ -18,32 +18,44 @@ Our compiler implements all four phases.
 
 ## Chosen Machine Architecture
 
-**Architecture**: Simple Register Machine (Hypothetical/Educational)
+**Architecture**: x86 (32-bit)
 
-Our compiler targets a **hypothetical register machine** designed for educational purposes, not a real architecture like x86, ARM, MIPS, or RISC-V. This choice allows us to focus on compiler concepts without the complexity of real processor architectures.
+Our compiler targets the **x86 (32-bit) architecture**, which is widely used in desktop and server computing. This is a real-world architecture that demonstrates practical code generation.
 
 **Architecture Specifications:**
-- **Type**: RISC-like (Reduced Instruction Set Computer)
+- **Type**: CISC (Complex Instruction Set Computer)
+- **Bit Width**: 32-bit
 - **Registers**: 
-  - 7 general-purpose registers: R1, R2, R3, R4, R5, R6, R7
-  - 1 dedicated return register: R0
-  - Special registers: FP (Frame Pointer), SP (Stack Pointer), RA (Return Address)
-- **Word Size**: 8 bytes (64 bits)
-- **Memory Model**: Stack-based with frame pointers
-- **Instruction Set**: Simple, high-level instructions (LOAD, STORE, ADD, SUB, JMP, CALL, RET, etc.)
+  - 6 general-purpose registers: EAX, EBX, ECX, EDX, ESI, EDI
+  - Special registers: EBP (Frame Pointer), ESP (Stack Pointer)
+  - EAX used for return values
+- **Word Size**: 4 bytes (32 bits)
+- **Memory Model**: Stack-based with frame pointers (EBP/ESP)
+- **Calling Convention**: cdecl (C calling convention)
+  - Caller pushes arguments right-to-left
+  - Caller cleans up stack after call
+  - Return value in EAX
+  - Callee saves EBP, sets up frame pointer
+- **Instruction Set**: x86 ISA (mov, add, sub, mul, div, cmp, jmp, call, ret, etc.)
 
-**Why Not Real Architectures?**
-- **Educational Focus**: Simplifies learning compiler concepts
-- **Portability**: Not tied to any specific processor
-- **Completeness**: Still demonstrates all code generation concepts
-- **Clarity**: Easier to understand than x86/ARM instruction encoding
+**Why x86?**
+- **Real-World**: Widely used architecture (Intel/AMD processors)
+- **Practical**: Demonstrates actual code generation for production systems
+- **Complete**: Shows all aspects of code generation (registers, stack, calling conventions)
+- **Educational**: Teaches real assembly programming concepts
 
-**Comparison to Real Architectures:**
-- **x86/x86-64**: CISC, complex instruction encoding, variable-length instructions
-- **ARM**: RISC, fixed-length 32-bit instructions, real-world mobile/embedded
+**x86 Characteristics:**
+- **CISC Architecture**: Complex instructions, variable-length encoding
+- **Stack-Based**: Uses stack for function calls and local variables
+- **Frame Pointer**: EBP points to current stack frame
+- **Memory Addressing**: `[EBP+offset]` for parameters, `[EBP-offset]` for locals
+- **Register Conventions**: Caller-saved (EAX, ECX, EDX) vs callee-saved (EBX, ESI, EDI)
+
+**Comparison to Other Architectures:**
+- **x86-64**: 64-bit extension of x86, more registers (R8-R15)
+- **ARM**: RISC, fixed-length instructions, used in mobile/embedded
 - **MIPS**: RISC, educational, fixed-length instructions
 - **RISC-V**: Open-source RISC, modular design
-- **Our Machine**: Simplified RISC-like, designed for compiler education
 
 ---
 
@@ -246,15 +258,15 @@ PROGRAM
 **Purpose**: Translates the AST into assembly code, Intermediate Representation (IR), relocatable machine code, and absolute machine code.
 
 **What it does**:
-- **IR Generation**: Creates Intermediate Representation (machine-independent code)
-- **Assembly Generation**: Traverses the AST and emits assembly instructions
+- **IR Generation**: Creates Intermediate Representation in 3AC (Three Address Code) format
+- **Assembly Generation**: Traverses the AST and emits x86-32 assembly instructions
 - **Relocatable Code**: Generates machine code with unresolved symbols (for linking)
 - **Absolute Code**: Generates machine code with all addresses resolved
-- Manages register allocation (7 general-purpose registers R1-R7, plus R0 for return value)
-- Generates function prologues/epilogues (save/restore frame pointer, allocate stack space)
-- Converts expressions to arithmetic operations
-- Generates control flow (if-then-else, while loops) using labels and jumps
-- Handles function calls (push arguments, call, get return value)
+- Manages register allocation (6 general-purpose x86 registers: EAX, EBX, ECX, EDX, ESI, EDI)
+- Generates x86 function prologues/epilogues (push EBP, mov EBP ESP, sub ESP frame_size)
+- Converts expressions to x86 arithmetic operations (add, sub, mul, div, cmp, etc.)
+- Generates control flow (if-then-else, while loops) using x86 jumps (jmp, jz, jnz)
+- Handles function calls using x86 cdecl convention (push args, call, add ESP cleanup)
 
 **Code Generation Phases:**
 
@@ -289,9 +301,10 @@ PROGRAM
 - Linear scan allocation (simple but effective for this compiler)
 
 **Memory Access**:
-- Local variables: `[FP-offset]` (Frame Pointer minus offset)
-- Parameters: Also accessed via `[FP-offset]`
-- Stack-based calling convention
+- Local variables: `[EBP-offset]` (Frame Pointer minus offset, negative)
+- Parameters: `[EBP+offset]` (Frame Pointer plus offset, positive, starting at EBP+8)
+- Stack-based calling convention (x86 cdecl)
+- Global variables: Absolute addresses `[label]`
 
 **Key Functions**:
 - `codegen_generate_ir()`: Generates Intermediate Representation
@@ -303,7 +316,7 @@ PROGRAM
 - `cg_generate_statement()`: Generates code for statements
 - `cg_generate_if()` / `cg_generate_while()`: Control flow generation
 
-**For beginners**: This is like translating a recipe from English to another language. The AST says "add a and b", and the code generator writes "LOAD R1, [FP-8] ; a" followed by "ADD R1, R1, R2" to perform the addition in assembly. Then it converts this to machine code formats.
+**For beginners**: This is like translating a recipe from English to another language. The AST says "add a and b", and the code generator writes x86 assembly: `mov EAX, DWORD PTR [EBP+8] ; a` followed by `add EAX, DWORD PTR [EBP+12] ; b` to perform the addition. Then it converts this to relocatable and absolute machine code formats.
 
 **Outputs**: 
 - `codegen.ir` - Intermediate Representation

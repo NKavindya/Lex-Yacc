@@ -5,7 +5,7 @@
 static SymTable *scope_head = NULL;
 static SymTable *scope_tail = NULL;
 
-static const int WORD_SIZE = 8;
+static const int WORD_SIZE = 4;  /* x86-32 uses 32-bit (4 bytes) words */
 
 static int align_to_word(int value) {
     int remainder = value % WORD_SIZE;
