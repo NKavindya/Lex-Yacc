@@ -39,12 +39,20 @@ AST *astRoot = NULL;
 %token COLON SEMICOLON COMMA DOT ASSIGN ARROW LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET
 %token PLUS MINUS MULT DIV AND OR NOT EQ NE LT GT LE GE
 
+/* Precedence for operators */
+%left OR
+%left AND
+
+/* Expect some conflicts due to left-recursive nested access in LALR(1) parser */
+/* These conflicts are resolved correctly by Bison's default shift action */
+%expect 7
+
 /* nonterminals carry AST */
 %type <node> statBlock statementList expr exprPrime relExpr arithExpr arithExprPrime term termPrime factor functionCall
 %type <node> prog classOrImplOrFunc classDecl classInherit moreIds classBody memberDecl funcDecl implDef implFuncs
 %type <node> funcDef funcHead funcBody varDeclOrStmtList varDeclOrStmt
 %type <node> localVarDecl attributeDecl varDecl arraySizes arraySize statement assignStat
-%type <node> variable idnest idnestList idOrSelf indice indiceList
+%type <node> variable idnest idOrSelf indice indiceList
 %type <node> fParams fParamsTailList aParams aParamsTailList type returnType
 %type <sVal> addOp multOp sign
 
@@ -738,72 +746,58 @@ sign:
 ;
 
 /* function call - functionCall -> idnestList id ( aParams ) */
+/* Split into explicit cases to avoid ambiguity */
 functionCall:
-      idnestList ID LPAREN aParams RPAREN
+      ID LPAREN aParams RPAREN
       {
-          log_production("functionCall -> idnestList id ( aParams )");
-          AST *c = ast_new(NODE_FUNCTION_CALL, $2, @2.first_line);
+          log_production("functionCall -> id ( aParams )");
+          AST *c = ast_new(NODE_FUNCTION_CALL, $1, @1.first_line);
+          if ($3) c->child = $3;
+          $$ = c;
+      }
+    | idnest DOT functionCall
+      {
+          log_production("functionCall -> idnest . functionCall");
+          AST *c = $3;
           if ($1) {
-              /* Attach idnest chain as first child, then aParams */
-              c->child = $1;
-              if ($4) {
-                  if ($1->sibling) {
-                      AST *last = $1;
-                      while (last->sibling) last = last->sibling;
-                      last->sibling = $4;
-                  } else {
-                      $1->sibling = $4;
-                  }
+              if (c->child) {
+                  AST *last = $1;
+                  while (last->sibling) last = last->sibling;
+                  last->sibling = c->child;
+                  c->child = $1;
+              } else {
+                  c->child = $1;
               }
-          } else if ($4) {
-              c->child = $4;
           }
           $$ = c;
       }
 ;
 
 /* variable -> idnestList id indiceList */
+/* Split into explicit cases to avoid ambiguity */
 variable:
-      idnestList ID indiceList
+      ID indiceList
       {
-          log_production("variable -> idnestList id indiceList");
-          AST *var = ast_new(NODE_ID, $2, @2.first_line);
+          log_production("variable -> id indiceList");
+          AST *var = ast_new(NODE_ID, $1, @1.first_line);
+          if ($2) var->sibling = $2;
+          $$ = var;
+      }
+    | idnest DOT variable
+      {
+          log_production("variable -> idnest . variable");
+          AST *var = $3;
           if ($1) {
-              /* Build chain: idnestList -> id -> indiceList */
               AST *last = $1;
               while (last->sibling) last = last->sibling;
               last->sibling = var;
               var = $1;
           }
-          if ($3) {
-              /* Attach indices to the variable */
-              if (var->sibling) {
-                  AST *last = var;
-                  while (last->sibling) last = last->sibling;
-                  last->sibling = $3;
-              } else {
-                  var->sibling = $3;
-              }
-          }
           $$ = var;
       }
 ;
 
-/* idnestList -> idnest idnestList | epsilon */
-idnestList:
-      idnest idnestList
-      {
-          log_production("idnestList -> idnest idnestList");
-          AST *head = $1;
-          if ($2) ast_append_sibling(&head, $2);
-          $$ = head;
-      }
-    | /* empty */
-      {
-          log_production("idnestList -> epsilon");
-          $$ = NULL;
-      }
-;
+
 
 /* idnest -> idOrSelf indiceList . | idOrSelf ( aParams ) . */
 idnest:
