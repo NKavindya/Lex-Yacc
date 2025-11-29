@@ -1,11 +1,13 @@
-// Error Test 6: Syntax error - invalid expression and missing operator
-func invalid() -> integer {
-    local a : integer;
-    local b : integer;
-    
-    a := 10;
-    b := 5;
-    a := a b;  // Missing operator between a and b
-    return(a);
+// Error Test 6: Semantic error - function call with wrong number of arguments
+func testAdd(a : integer, b : integer) -> integer {
+    local result : integer;
+    result := a + b;
+    return(result);
+}
+
+func test() -> void {
+    local sum : integer;
+    sum := testAdd(5);  // Wrong number of arguments: expected 2, got 1
+    write(sum);
 }
 

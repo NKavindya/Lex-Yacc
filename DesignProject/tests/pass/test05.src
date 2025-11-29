@@ -11,13 +11,3 @@ func calculate(x : integer, y : integer) -> integer {
     return(result);
 }
 
-func testUnary() -> void {
-    local a : integer;
-    local b : integer;
-    
-    a := 10;
-    b := 5;
-    write(+a);
-    write(-b);
-}
-

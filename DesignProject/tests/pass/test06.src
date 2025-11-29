@@ -2,27 +2,16 @@
 func evaluate(x : integer, y : integer, z : integer) -> integer {
     local result : integer;
     
-    if ((x > 0) and (y < 10)) then {
-        result := x + y;
+    if (x > 0) then {
+        if (y < 10) then {
+            result := x + y;
+        } else {
+            result := z;
+        };
     } else {
         result := z;
-    }
-    
-    if ((x == 0) or (y == 0)) then {
-        result := 0;
-    }
+    };
     
     return(result);
-}
-
-func readAndProcess() -> void {
-    local a : integer;
-    local b : integer;
-    local c : integer;
-    
-    read(a);
-    read(b);
-    c := evaluate(a, b, 0);
-    write(c);
 }
 

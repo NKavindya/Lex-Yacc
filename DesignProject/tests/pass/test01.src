@@ -1,19 +1,5 @@
-// Test 1: Basic class with attributes and methods
+// Test 1: Basic class with attributes
 class Point {
     public attribute x : integer;
-    public attribute y : integer;
-    
-    public func getX() -> integer;
-    public func setX(newX : integer) -> void;
-};
-
-implement Point {
-    func getX() -> integer {
-        return(x);
-    }
-    
-    func setX(newX : integer) -> void {
-        x := newX;
-    }
 };
 

@@ -1,7 +1,7 @@
-// Error Test 1: Syntax error - missing semicolon
+// Error Test 1: Semantic error - undeclared variable
 func add(a : integer, b : integer) -> integer {
-    local result : integer
-    result := a + b
+    local result : integer;
+    result := a + b + c;  // c is not declared
     return(result);
 }
 
