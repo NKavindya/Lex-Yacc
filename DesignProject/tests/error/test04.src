@@ -9,3 +9,4 @@ func process() -> void {
     write(x);
 }
 
+
