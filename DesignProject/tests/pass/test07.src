@@ -1,9 +1,0 @@
-// arithmetic with multiple operations
-func calculate(x : integer, y : integer, z : integer) -> integer {
-    local result : integer;
-    result := x + y;
-    result := result * z;
-    result := result - x;
-    result := result / y;
-    return(result);
-}

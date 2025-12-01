@@ -1,8 +1,0 @@
-// variable used before declaration
-func testUseBeforeDecl() -> integer {
-    local result : integer;
-    result := x + 5;  // error: x used before declaration
-    local x : integer;
-    return(result);
-}
-

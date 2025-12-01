@@ -1,0 +1,10 @@
+// Focus: Public and private visibility modifiers
+// Grammar: visibility -> PUBLIC | PRIVATE, classBody -> visibility memberDecl classBody
+
+class Test {
+  public attribute pub : integer;
+  private attribute priv : integer;
+  public func pubFunc() => void;
+  private func privFunc() => integer;
+};
+

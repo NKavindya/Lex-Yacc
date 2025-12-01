@@ -1,0 +1,7 @@
+// Focus: Basic class declaration without inheritance
+// Grammar: classDecl -> CLASS ID { classBody } ;
+
+class Simple {
+  public attribute x : integer;
+};
+

@@ -1,0 +1,9 @@
+// Focus: Class declaration with single and multiple inheritance
+// Grammar: classDecl -> CLASS ID classInherit { classBody } ; where classInherit -> ISA ID moreIds | epsilon
+
+class Parent { };
+
+class Child isa Parent { };
+
+class GrandChild isa Parent, Child { };
+

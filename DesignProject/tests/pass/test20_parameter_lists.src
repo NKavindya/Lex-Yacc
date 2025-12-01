@@ -1,0 +1,15 @@
+// Focus: Function parameter lists
+// Grammar: fParams -> ID : type arraySizes fParamsTailList | epsilon, fParamsTailList -> COMMA ID : type arraySizes fParamsTailList | epsilon
+
+func noParams() => integer {
+  return (0);
+}
+
+func oneParam(x : integer) => integer {
+  return (x);
+}
+
+func multiParams(a : integer, b : float, c : integer[5]) => integer {
+  return (a);
+}
+

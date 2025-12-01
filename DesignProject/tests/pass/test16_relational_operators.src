@@ -1,0 +1,15 @@
+// Focus: Relational operators
+// Grammar: relExpr -> arithExpr relOp arithExpr, relOp -> == | <> | < | > | <= | >=
+
+func test() => integer {
+  local x : integer;
+  local y : integer;
+  if (x == y) then write(1); else write(0);;
+  if (x <> y) then write(1); else write(0);;
+  if (x < y) then write(1); else write(0);;
+  if (x > y) then write(1); else write(0);;
+  if (x <= y) then write(1); else write(0);;
+  if (x >= y) then write(1); else write(0);;
+  return (0);
+}
+

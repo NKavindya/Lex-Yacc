@@ -1,0 +1,8 @@
+// Error test: Invalid array syntax - missing brackets
+// Expected: Syntax error - invalid array declaration syntax
+
+func test() => integer {
+  local arr integer 10;
+  return (0);
+}
+

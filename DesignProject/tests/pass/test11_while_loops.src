@@ -1,0 +1,11 @@
+// Focus: While loop statements
+// Grammar: statement -> WHILE LPAREN expr RPAREN statBlock SEMICOLON, statBlock -> { statementList } | statement | epsilon
+
+func test() => integer {
+  local x : integer;
+  while (x < 10) { x := x + 1; } ;
+  while (x > 0) x := x - 1;;
+  while (x == 0) ;
+  return (x);
+}
+

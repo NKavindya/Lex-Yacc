@@ -1,0 +1,10 @@
+// Focus: Local variable declarations
+// Grammar: localVarDecl -> LOCAL varDecl
+
+func test() => integer {
+  local x : integer;
+  local y : float;
+  local arr : integer[10];
+  return (0);
+}
+

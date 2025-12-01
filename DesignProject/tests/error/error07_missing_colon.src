@@ -1,0 +1,8 @@
+// Error test: Missing colon in variable declaration
+// Expected: Syntax error - missing colon between identifier and type
+
+func test() => integer {
+  local x integer;
+  return (x);
+}
+

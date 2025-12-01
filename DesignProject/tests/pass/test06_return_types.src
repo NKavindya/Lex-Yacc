@@ -1,0 +1,10 @@
+// Focus: Return types (void, integer, float, custom type)
+// Grammar: returnType -> type | VOID, type -> INTEGER_T | FLOAT_T | ID
+
+class Types {
+  public func retVoid() => void;
+  public func retInt() => integer;
+  public func retFloat() => float;
+  public func retCustom() => Types;
+};
+

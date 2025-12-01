@@ -1,0 +1,17 @@
+// Focus: Function call statements
+// Grammar: statement -> functionCall ;, functionCall -> ID ( aParams ), aParams -> expr aParamsTailList | epsilon
+
+func foo() => integer {
+  return (0);
+}
+
+func bar(x : integer, y : float) => integer {
+  return (x);
+}
+
+func test() => integer {
+  foo();
+  bar(1, 2.0);
+  return (0);
+}
+

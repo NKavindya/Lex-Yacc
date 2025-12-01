@@ -1,0 +1,33 @@
+// Covers idnest/idOrSelf/variable chains, dotted member access, functionCall via idnest, attribute arrays, returnType/type using IDs.
+
+class Child {
+  public attribute value : integer;
+  public func getValue() => integer;
+};
+
+class Holder {
+  public attribute child : Child;
+  public attribute matrix : integer[2][3];
+  public attribute list : integer[];
+  public func getChild() => Child;
+  public func setVal(v : integer) => void;
+};
+
+implement Child {
+  func getValue() => integer {
+    return (value);
+  }
+}
+
+implement Holder {
+  func getChild() => Child {
+    return (child);
+  }
+
+  func setVal(v : integer) => void {
+    child.value := v;
+    matrix[1][2] := v;
+    getChild();
+  }
+}
+

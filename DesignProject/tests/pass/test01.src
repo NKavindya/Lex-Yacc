@@ -1,5 +1,0 @@
-// basic class with attributes
-class Point {
-    public attribute x : integer;
-};
-

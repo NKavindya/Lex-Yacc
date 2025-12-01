@@ -1,5 +1,0 @@
-func wrong(a : int, b : int) -> int {
-    local text : string;
-    text := a + b;
-    return(a);
-}

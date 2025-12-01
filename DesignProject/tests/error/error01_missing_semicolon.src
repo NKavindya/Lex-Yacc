@@ -1,0 +1,9 @@
+// Error test: Missing semicolon after assignment statement
+// Expected: Syntax error - missing semicolon
+
+func test() => integer {
+  local x : integer;
+  x := 5
+  return (x);
+}
+

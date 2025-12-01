@@ -1,0 +1,16 @@
+// Focus: Return statements
+// Grammar: statement -> RETURN LPAREN expr RPAREN ;
+
+func testInt() => integer {
+  return (42);
+}
+
+func testFloat() => float {
+  return (3.14);
+}
+
+func testExpr() => integer {
+  local x : integer;
+  return (x + 1);
+}
+

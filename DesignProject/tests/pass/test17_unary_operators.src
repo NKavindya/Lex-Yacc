@@ -1,0 +1,11 @@
+// Focus: Unary operators (sign, not)
+// Grammar: factor -> sign factor | not factor, sign -> + | -
+
+func test() => integer {
+  local x : integer;
+  x := +5;
+  x := -x;
+  x := not x;
+  return (x);
+}
+

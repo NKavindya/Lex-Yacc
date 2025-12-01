@@ -1,0 +1,10 @@
+class Point {
+    public attribute x : integer ;
+    public attribute y : integer ;
+    
+    construct ( x : integer , y : integer ) {
+        self . x := x ;
+        self . y := y ;
+    } ;
+} ;
+

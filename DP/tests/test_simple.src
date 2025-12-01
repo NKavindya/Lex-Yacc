@@ -1,0 +1,6 @@
+func add ( x : integer , y : integer ) => integer {
+    local result : integer ;
+    result := x + y ;
+    return ( result ) ;
+} ;
+

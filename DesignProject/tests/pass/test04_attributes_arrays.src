@@ -1,0 +1,9 @@
+// Focus: Attribute declarations with array dimensions
+// Grammar: attributeDecl -> ATTRIBUTE varDecl, varDecl -> ID : type arraySizes ;, arraySize -> [ INT_LIT ] | [ ]
+
+class Arrays {
+  public attribute single : integer[5];
+  public attribute multi : float[3][4];
+  public attribute dynamic : integer[];
+};
+

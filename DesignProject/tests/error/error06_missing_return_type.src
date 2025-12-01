@@ -1,0 +1,8 @@
+// Error test: Missing return type in function declaration
+// Expected: Syntax error - missing return type after =>
+
+func test() => {
+  local x : integer;
+  return (x);
+}
+
