@@ -1,0 +1,16 @@
+// Covers top-level program/class/impl grammar: classDecl with inheritance, classBody visibility, attributeDecl, varDecl arraySizes, funcDecl/funcHead (func/construct), fParams (ε/non-ε), returnType/type, implDef (ε implFuncs).
+
+class A isa B, C {
+  public attribute x : integer;
+  private attribute data : float[10][];
+  public func foo(a : integer, b : float[5]) => float;
+  private construct ( );
+  public func bar() => void;
+  public func empty() => void;
+};
+
+class B { };
+class C { };
+
+implement C { }
+

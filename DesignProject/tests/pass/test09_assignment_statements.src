@@ -1,0 +1,12 @@
+// Focus: Assignment statements
+// Grammar: assignStat -> variable ASSIGN expr, statement -> assignStat ;
+
+func test() => integer {
+  local x : integer;
+  local y : float;
+  x := 5;
+  y := 3.14;
+  x := x + 1;
+  return (x);
+}
+

@@ -1,0 +1,9 @@
+// Error test: Missing parentheses in function call
+// Expected: Syntax error - missing parentheses
+
+func test() => integer {
+  local x : integer;
+  x := test;
+  return (x);
+}
+

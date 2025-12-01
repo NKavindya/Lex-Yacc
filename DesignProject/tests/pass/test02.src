@@ -1,5 +1,0 @@
-// single class with attribute
-class TestPerson {
-    public attribute name : integer;
-};
-

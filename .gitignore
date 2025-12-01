@@ -1,0 +1,26 @@
+# IDE files
+.idea/
+
+# Build artifacts
+*.o
+*.a
+*.so
+*.exe
+*.out
+parser.tab.c
+parser.tab.h
+lex.yy.c
+compiler
+
+# Generated files
+derivation_steps.txt
+lexer_tokens.txt
+lexer_symbols.txt
+lexer_errors.txt
+semantic_errors.txt
+symbol_table.txt
+codegen.ir
+codegen.asm
+codegen.reloc
+codegen.abs
+syntax_error.txt

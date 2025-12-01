@@ -1,9 +1,0 @@
-// unary operators (negation and logical not)
-func testUnary(x : integer) -> integer {
-    local neg : integer;
-    local notResult : integer;
-    neg := -x;
-    notResult := not x;
-    return(neg + notResult);
-}
-

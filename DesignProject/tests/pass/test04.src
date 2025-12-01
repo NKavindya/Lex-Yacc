@@ -1,9 +1,0 @@
-// control flow with if-else and while loops
-func testMax(a : integer, b : integer) -> integer {
-    if (a > b) then {
-        return(a);
-    } else {
-        return(b);
-    };
-}
-

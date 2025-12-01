@@ -1,36 +1,81 @@
-#include "codegen.h"
-#include "symbol_table.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
+/* 
+ * codegen.c - code generation implementation
+ * 
+ * generates code from the AST in multiple formats:
+ * 
+ * 1. intermediate representation (IR):
+ *    - 3-address code format (three-address code)
+ *    - machine-independent representation
+ *    - format: result = operand1 operator operand2
+ * 
+ * 2. x86-32 assembly code:
+ *    - generates x86-32 assembly language
+ *    - uses standard calling conventions (parameters at EBP+8, locals at EBP-offset)
+ *    - manages register allocation (EAX, EBX, ECX, EDX, ESI, EDI)
+ *    - handles function prologues/epilogues
+ *    - generates code for: expressions, statements, function calls, control flow
+ * 
+ * 3. relocatable machine code:
+ *    - assembles assembly into relocatable object file format
+ *    - can be linked with other object files
+ * 
+ * 4. absolute machine code:
+ *    - assembles assembly into absolute executable format
+ *    - fixed memory addresses (ready to execute)
+ * 
+ * architecture: x86-32 (32-bit x86)
+ * - word size: 4 bytes
+ * - stack grows downward
+ * - calling convention: parameters pushed right-to-left, caller cleans stack
+ * - registers: EAX, EBX, ECX, EDX, ESI, EDI (general purpose), EBP (frame pointer), ESP (stack pointer)
+ */
 
-/* string literal mapping for .data section */
+#include "codegen.h"      // code generation function prototypes
+#include "symbol_table.h" // symbol table for variable offsets and TYPE information
+#include <stdio.h>         // standard i/o (fprintf, FILE)
+#include <stdlib.h>       // standard library (malloc, free, exit)
+#include <string.h>       // string manipulation (strcmp, strdup, sprintf)
+#include <stdarg.h>       // variable argument lists (va_list, va_start, etc.)
+
+/* ========== string literal management ========== */
+/* maps string literals to indices in .data section */
+
 typedef struct {
-    char *str;
-    int index;
+    char *str;    // string literal text
+    int index;    // index in string literal table
 } StringMapping;
 
-static StringMapping string_map[100];
-static int string_map_count = 0;
+static StringMapping string_map[100];  // array of string mappings
+static int string_map_count = 0;        // number of strings in table
 
-/* float literal mapping for .data section */
+/* ========== float literal management ========== */
+/* maps float literals to indices in .data section */
+
 typedef struct {
-    double value;
-    int index;
+    double value; // float literal value
+    int index;    // index in float literal table
 } FloatMapping;
 
-static FloatMapping float_map[100];
-static int float_map_count = 0;
+static FloatMapping float_map[100];  // array of float mappings
+static int float_map_count = 0;       // number of floats in table
 
-/* x86-32 Architecture Configuration */
-#define REG_POOL 6  /* EAX, EBX, ECX, EDX, ESI, EDI (EBP and ESP are special) */
-#define WORD_SIZE 4  /* x86-32 uses 32-bit (4 bytes) words */
+/* ========== x86-32 architecture configuration ========== */
 
-/* x86 General Purpose Registers (excluding EBP, ESP which are special) */
+/* register pool: number of general-purpose registers available for allocation */
+/* EAX, EBX, ECX, EDX, ESI, EDI (EBP and ESP are special-purpose) */
+#define REG_POOL 6
+
+/* word size: x86-32 uses 32-bit (4 bytes) words */
+#define WORD_SIZE 4
+
+/* x86 general purpose register names (excluding EBP, ESP which are special) */
+/* index mapping: 0=EAX, 1=EBX, 2=ECX, 3=EDX, 4=ESI, 5=EDI */
 static const char *REG_NAMES[REG_POOL] = {"EAX", "EBX", "ECX", "EDX", "ESI", "EDI"};
 
-/* IR temporary counter for 3AC */
+/* ========== IR generation support ========== */
+
+/* IR temporary counter: generates unique temporary variable names for 3-address code */
+/* format: t0, t1, t2, ... */
 static int ir_temp_counter = 0;
 
 typedef struct {
@@ -105,13 +150,13 @@ static Symbol *cg_lookup(FunctionContext *fn, const char *name) {
     return symtable_lookup(fn->scope, name);
 }
 
-/* calculate x86 parameter offset: first param at EBP+8, second at EBP+12, etc. */
+/* calculate x86 parameter offset: first PARAM at EBP+8, second at EBP+12, etc. */
 static int get_param_offset(Symbol *funcSym, const char *paramName) {
     if (!funcSym || !funcSym->params) return -1;
     int paramIndex = 0;
     for (Symbol *p = funcSym->params; p; p = p->next) {
         if (p->name && strcmp(p->name, paramName) == 0) {
-            /* x86 cdecl: [EBP+4] = return address, [EBP+8] = first param */
+            /* x86 cdecl: [EBP+4] = RETURN address, [EBP+8] = first PARAM */
             return 8 + (paramIndex * WORD_SIZE);
         }
         paramIndex++;
@@ -158,7 +203,7 @@ static int cg_load_var(FunctionContext *fn, Symbol *sym) {
     return reg;
 }
 
-/* Forward declarations */
+/* forward declarations */
 static int cg_generate_expr(FunctionContext *fn, AST *expr);
 static void cg_generate_statement(FunctionContext *fn, AST *stmt);
 static int get_string_index(const char *str);
@@ -202,7 +247,7 @@ static int cg_generate_function_call(FunctionContext *fn, AST *call) {
     if (argCount > 0)
         cg_emit(fn->cg, "    add ESP, %d    ; clean up stack\n", argCount * WORD_SIZE);
     int target = cg_alloc_reg_with_tracking(fn->cg, fn);
-    /* return value is in EAX (x86 convention) */
+    /* RETURN value is in EAX (x86 convention) */
     if (target != 0) {
         cg_emit(fn->cg, "    mov %s, EAX\n", reg_name(target));
     }
@@ -227,22 +272,22 @@ static int cg_generate_expr(FunctionContext *fn, AST *expr) {
             return r;
         }
         case NODE_FLOAT_LITERAL: {
-            /* use x87 FPU for float literals - store in .data section and load via FPU */
+            /* use x87 fpu for float literals - store in .data section and load via fpu */
             int float_idx = get_float_index(expr->floatValue);
             int r = cg_alloc_reg_with_tracking(fn->cg, fn);
-            /* load float from .data section using FPU */
+            /* load float from .data section using fpu */
             cg_emit(fn->cg, "    fld QWORD PTR [float_%d]    ; load float: %f\n", float_idx, expr->floatValue);
             /* store float to memory temporarily (8 bytes for double precision) */
             cg_emit(fn->cg, "    sub ESP, 8    ; allocate space for float\n");
             cg_emit(fn->cg, "    fstp QWORD PTR [ESP]    ; store float to stack\n");
             /* for compatibility with integer-based codegen, we need integer representation */
-            /* however, we preserve the float value in memory and use FPU for operations */
+            /* however, we preserve the float value in memory and use fpu for operations */
             /* load the lower 32 bits as integer representation (this is a limitation) */
             cg_emit(fn->cg, "    mov %s, DWORD PTR [ESP]    ; load float bits (lower 32 bits)\n", reg_name(r));
             cg_emit(fn->cg, "    add ESP, 8    ; clean up stack\n");
-            /* NOTE: This is still not ideal - proper float support requires FPU stack throughout */
-            /* the float value is loaded correctly via FPU, but we extract integer bits for compatibility */
-            /* full FPU support would require refactoring codegen to track float types and use FPU stack */
+            /* note: this is still not ideal - proper float support requires fpu stack throughout */
+            /* the float value is loaded correctly via fpu, but we extract integer bits for compatibility */
+            /* full fpu support would require refactoring codegen to track float types and use fpu stack */
             return r;
         }
         case NODE_STRING_LITERAL: {
@@ -252,7 +297,7 @@ static int cg_generate_expr(FunctionContext *fn, AST *expr) {
                 cg_emit(fn->cg, "    mov %s, OFFSET str_%d    ; string literal: \"%s\"\n", 
                         reg_name(r), str_idx, expr->name ? expr->name : "");
             } else {
-                /* fallback if not found in mapping */
+                /* fallback IF not found in mapping */
                 cg_emit(fn->cg, "    mov %s, 0    ; string literal not found in .data section\n", reg_name(r));
             }
             return r;
@@ -267,13 +312,13 @@ static int cg_generate_expr(FunctionContext *fn, AST *expr) {
                 cg_emit_binary(fn, "sub", left, right);
             } else if (strcmp(op, "*") == 0) {
                 /* x86 mul uses EAX:EDX - mul multiplies EAX by operand, result in EDX:EAX */
-                /* check if EAX is already allocated - if so, save it */
+                /* check IF EAX is already allocated - IF so, save it */
                 int eax_was_allocated = !fn->cg->available[0];
                 if (eax_was_allocated) {
                     /* save EAX to stack temporarily */
                     cg_emit(fn->cg, "    push EAX    ; save EAX before mul\n");
                 }
-                /* free EAX if it was allocated */
+                /* free EAX IF it was allocated */
                 if (eax_was_allocated) {
                     fn->cg->available[0] = 1;
                 }
@@ -283,19 +328,19 @@ static int cg_generate_expr(FunctionContext *fn, AST *expr) {
                 cg_emit(fn->cg, "    mul DWORD PTR [ESP]    ; EAX = EAX * [ESP]\n");
                 cg_emit(fn->cg, "    add ESP, 4    ; clean up stack\n");
                 cg_free_reg(fn->cg, right);
-                /* result is in EAX, move to target register if needed */
+                /* result is in EAX, move to target register IF needed */
                 if (left != 0) {
                     cg_emit(fn->cg, "    mov %s, EAX\n", reg_name(left));
-                    /* restore EAX if it was allocated before */
+                    /* restore EAX IF it was allocated before */
                     if (eax_was_allocated) {
                         cg_emit(fn->cg, "    pop EAX    ; restore EAX after mul\n");
                         fn->cg->available[0] = 0;  /* mark EAX as allocated again */
                     }
                 } else {
-                    /* if left was EAX, it's already there */
+                    /* IF left was EAX, it's already there */
                     left = 0;  /* EAX is register 0 */
-                    fn->cg->available[0] = 0;  /* Mark EAX as allocated */
-                    /* restore EAX if it was allocated before (but now result is in EAX) */
+                    fn->cg->available[0] = 0;  /* mark EAX as allocated */
+                    /* restore EAX IF it was allocated before (but now result is in EAX) */
                     if (eax_was_allocated) {
                         /* the old EAX value is lost - this is a limitation */
                         cg_emit(fn->cg, "    add ESP, 4    ; discard saved EAX (result now in EAX)\n");
@@ -303,13 +348,13 @@ static int cg_generate_expr(FunctionContext *fn, AST *expr) {
                 }
             } else if (strcmp(op, "/") == 0) {
                 /* x86 idiv uses EDX:EAX / operand, quotient in EAX, remainder in EDX */
-                /* check if EAX is already allocated - if so, save it */
+                /* check IF EAX is already allocated - IF so, save it */
                 int eax_was_allocated = !fn->cg->available[0];
                 if (eax_was_allocated) {
                     /* save EAX to stack temporarily */
                     cg_emit(fn->cg, "    push EAX    ; save EAX before idiv\n");
                 }
-                /* free EAX if it was allocated */
+                /* free EAX IF it was allocated */
                 if (eax_was_allocated) {
                     fn->cg->available[0] = 1;
                 }
@@ -320,26 +365,26 @@ static int cg_generate_expr(FunctionContext *fn, AST *expr) {
                 cg_emit(fn->cg, "    idiv DWORD PTR [ESP]    ; EAX = EDX:EAX / [ESP]\n");
                 cg_emit(fn->cg, "    add ESP, 4    ; clean up stack\n");
                 cg_free_reg(fn->cg, right);
-                /* quotient is in EAX, move to target register if needed */
+                /* quotient is in EAX, move to target register IF needed */
                 if (left != 0) {
                     cg_emit(fn->cg, "    mov %s, EAX\n", reg_name(left));
-                    /* restore EAX if it was allocated before */
+                    /* restore EAX IF it was allocated before */
                     if (eax_was_allocated) {
                         cg_emit(fn->cg, "    pop EAX    ; restore EAX after idiv\n");
                         fn->cg->available[0] = 0;  /* mark EAX as allocated again */
                     }
                 } else {
-                    /* if left was EAX, it's already there */
+                    /* IF left was EAX, it's already there */
                     left = 0;  /* EAX is register 0 */
                     fn->cg->available[0] = 0;  /* mark EAX as allocated */
-                    /* restore EAX if it was allocated before (but now result is in EAX) */
+                    /* restore EAX IF it was allocated before (but now result is in EAX) */
                     if (eax_was_allocated) {
                         /* the old EAX value is lost - this is a limitation */
                         cg_emit(fn->cg, "    add ESP, 4    ; discard saved EAX (result now in EAX)\n");
                     }
                 }
             } else if (strcmp(op, "and") == 0 || strcmp(op, "&&") == 0) {
-                /* short-circuit AND: if left is false, skip right evaluation */
+                /* short-circuit and: IF left is false, skip right evaluation */
                 char short_circuit_end[64];
                 cg_make_label(fn->cg, short_circuit_end, sizeof(short_circuit_end), "L_and_end");
                 /* test left operand */
@@ -352,7 +397,7 @@ static int cg_generate_expr(FunctionContext *fn, AST *expr) {
                 cg_emit(fn->cg, "%s:\n", short_circuit_end);
                 cg_free_reg(fn->cg, right);
             } else if (strcmp(op, "or") == 0 || strcmp(op, "||") == 0) {
-                /* short-circuit OR: if left is true, skip right evaluation */
+                /* short-circuit or: IF left is true, skip right evaluation */
                 char short_circuit_end[64];
                 cg_make_label(fn->cg, short_circuit_end, sizeof(short_circuit_end), "L_or_end");
                 /* test left operand */
@@ -524,8 +569,8 @@ static void cg_generate_function(FunctionContext *fn, AST *funcNode, SymTable *s
     fn->callee_saved_used[2] = 0;  /* EDI */
     
     snprintf(fn->funcName, sizeof(fn->funcName), "%s", funcNode->name ? funcNode->name : "anon");
-    /* ensure endLabel fits: "_" + funcName (max 58 chars) + "_END" + null = 64 bytes total */
-    /* format "_%s_END" needs: 1 + funcName + 4 + 1 = 64, so funcName max is 58 */
+    /* ensure endlabel fits: "_" + funcname (max 58 chars) + "_end" + NULL = 64 bytes total */
+    /* format "_%s_end" needs: 1 + funcname + 4 + 1 = 64, so funcname max is 58 */
     /* use format specifier with length limit to avoid truncation warning */
     snprintf(fn->endLabel, sizeof(fn->endLabel), "_%.58s_END", fn->funcName);
     
@@ -582,7 +627,7 @@ static void cg_generate_function(FunctionContext *fn, AST *funcNode, SymTable *s
 static void collect_string_literals(AST *node, char **strings, int *count, int max_count) {
     if (!node) return;
     if (node->kind == NODE_STRING_LITERAL && node->name) {
-        /* check if already collected */
+        /* check IF already collected */
         int found = 0;
         for (int i = 0; i < *count; i++) {
             if (strings[i] && strcmp(strings[i], node->name) == 0) {
@@ -656,7 +701,7 @@ static int get_string_index(const char *str) {
 }
 
 static int get_float_index(double value) {
-    /* check if float value already exists in mapping */
+    /* check IF float value already exists in mapping */
     for (int i = 0; i < float_map_count; i++) {
         if (float_map[i].value == value) {
             return float_map[i].index;
@@ -901,7 +946,7 @@ int codegen_generate_ir(AST *root, SymTable *global, const char *outPath) {
     return 0;
 }
 
-/* machine code generation (Relocatable and Absolute) */
+/* machine code generation (relocatable and absolute) */
 
 int codegen_generate_relocatable(const char *asmPath, const char *outPath) {
     FILE *in = fopen(asmPath, "r");
@@ -930,11 +975,11 @@ int codegen_generate_relocatable(const char *asmPath, const char *outPath) {
             continue;
         }
         if (strstr(line, "mov") || strstr(line, "add") || strstr(line, "sub"))
-            address += 3;  /* Typical x86 instruction size */
+            address += 3;  /* typical x86 instruction size */
         else if (strstr(line, "push") || strstr(line, "pop"))
             address += 1;
         else if (strstr(line, "call") || strstr(line, "jmp") || strstr(line, "jz"))
-            address += 5;  /* Call/jump with relocatable address */
+            address += 5;  /* call/jump with relocatable address */
         else if (strstr(line, "ret"))
             address += 1;
         else

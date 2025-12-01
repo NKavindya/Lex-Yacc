@@ -1,0 +1,14 @@
+// Focus: Member access with dot operator
+// Grammar: variable -> idOrSelf DOT ID indiceList | idnest DOT variable, idOrSelf -> ID | SELF
+
+class Container {
+  public attribute value : integer;
+};
+
+func test() => integer {
+  local obj : Container;
+  obj.value := 5;
+  self.value := 10;
+  return (obj.value);
+}
+

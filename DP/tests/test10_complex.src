@@ -1,0 +1,17 @@
+class Complex {
+    public attribute real : float ;
+    public attribute imag : float ;
+    
+    construct ( r : float , i : float ) {
+        self . real := r ;
+        self . imag := i ;
+    } ;
+    
+    func add ( other : Complex ) => Complex {
+        local result : Complex ;
+        result . real := self . real + other . real ;
+        result . imag := self . imag + other . imag ;
+        return ( result ) ;
+    } ;
+} ;
+

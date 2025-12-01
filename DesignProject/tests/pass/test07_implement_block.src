@@ -1,0 +1,13 @@
+// Focus: Implement block with function definitions
+// Grammar: implDef -> IMPLEMENT ID { implFuncs }, implFuncs -> funcDef implFuncs | epsilon
+
+class Test {
+  public func foo() => integer;
+};
+
+implement Test {
+  func foo() => integer {
+    return (0);
+  }
+}
+

@@ -1,0 +1,15 @@
+// Focus: Arithmetic operators (addOp, multOp)
+// Grammar: addOp -> + | - | or, multOp -> * | / | and
+
+func test() => integer {
+  local x : integer;
+  local y : integer;
+  x := 1 + 2;
+  x := 5 - 3;
+  x := 2 * 3;
+  x := 6 / 2;
+  x := x or y;
+  x := x and y;
+  return (x);
+}
+

@@ -1,0 +1,9 @@
+// Error test: Missing 'then' keyword in if statement
+// Expected: Syntax error - missing 'then' keyword
+
+func test() => integer {
+  local x : integer;
+  if (x > 0) write(x); else write(0);
+  return (x);
+}
+

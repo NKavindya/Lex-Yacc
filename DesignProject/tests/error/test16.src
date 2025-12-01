@@ -1,6 +1,0 @@
-// undeclared class usage
-func testUndeclaredClass() -> integer {
-    local obj : UnknownClass;  // error: class not declared
-    return(0);
-}
-

@@ -1,0 +1,29 @@
+// Covers expression grammar: addOp/multOp/sign/not, relOp variants, aParams (ε and non-ε), indiceList, functionCall, factor forms.
+
+func zero() => integer {
+  return (0);
+}
+
+func main(a : integer, b : float) => integer {
+  local x : integer;
+  local y : float;
+  local arr : integer[3][];
+
+  x := (a + 2) * 3 / 2 - 1;
+  y := +b * 2.0;
+  x := -x;
+  x := x and 1;
+
+  if ( x or (a + 1) ) then write(x); else write(a);;
+  if (x < 1) then write(x); else write(x);;
+  if (x > 1) then write(x); else write(x);;
+  if (x <= 1) then write(x); else write(x);;
+  if (x >= 1) then write(x); else write(x);;
+  if (not x) then write(x); else write(x);;
+
+  arr[1][2] := x;
+  main(x, y);
+  zero();
+  return (x);
+}
+

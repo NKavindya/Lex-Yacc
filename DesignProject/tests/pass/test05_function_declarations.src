@@ -1,0 +1,10 @@
+// Focus: Function and constructor declarations
+// Grammar: funcDecl -> funcHead ;, funcHead -> FUNC ID ( fParams ) ARROW returnType | CONSTRUCT ( fParams )
+
+class Functions {
+  public func noParams() => void;
+  public func withParams(a : integer, b : float) => integer;
+  public construct ( );
+  public construct (x : integer);
+};
+

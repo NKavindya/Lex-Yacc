@@ -1,0 +1,7 @@
+// Error test: Missing closing brace in class declaration
+// Expected: Syntax error - missing closing brace
+
+class Test {
+  public attribute x : integer;
+  public func foo() => integer;
+

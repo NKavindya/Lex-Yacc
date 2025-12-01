@@ -1,9 +1,0 @@
-// read and write operations
-func readAndWrite() -> void {
-    local value : integer;
-    read(value);
-    write(value);
-    value := value + 1;
-    write(value);
-}
-

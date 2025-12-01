@@ -1,0 +1,9 @@
+// Error test: Invalid assignment operator (using = instead of :=)
+// Expected: Syntax error - invalid assignment operator
+
+func test() => integer {
+  local x : integer;
+  x = 5;
+  return (x);
+}
+

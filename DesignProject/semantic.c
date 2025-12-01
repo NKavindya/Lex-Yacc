@@ -1,18 +1,50 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include "ast.h"
-#include "symbol_table.h"
+/* 
+ * semantic.c - semantic analysis implementation
+ * 
+ * performs semantic analysis of the AST in two passes:
+ * 
+ * pass a (semantic_passA):
+ * - builds symbol tables for all scopes (global, function, class, block)
+ * - inserts symbols: classes, functions, variables, parameters, attributes
+ * - establishes scope hierarchy (global -> function -> block)
+ * - detects duplicate declarations in same scope
+ * - calculates stack frame offsets for variables and parameters
+ * 
+ * pass b (semantic_passB):
+ * - type checking: verifies type compatibility in assignments and operations
+ * - name resolution: checks that all identifiers are declared
+ * - function call validation: verifies correct number and types of arguments
+ * - expression type checking: ensures operations are performed on compatible types
+ * - return type checking: verifies return statements match function return types
+ * 
+ * error reporting:
+ * - collects semantic errors with line numbers
+ * - writes errors to semantic_errors.txt
+ * - prevents duplicate error messages
+ */
 
-/* globals */
+#include <stdio.h>        // standard i/o (fprintf, FILE)
+#include <stdlib.h>       // standard library (malloc, free)
+#include <string.h>       // string manipulation (strcmp, strdup)
+#include <stdarg.h>       // variable argument lists (va_list, va_start, etc.)
+#include "ast.h"          // abstract syntax tree structures
+#include "symbol_table.h" // symbol table data structures and functions
+
+/* ========== global variables ========== */
+
+/* global symbol table: root of scope hierarchy */
 SymTable *globalTable = NULL;
+
+/* error output FILE: semantic errors are written here */
 FILE *errFile = NULL;
 
-/* --- simple structure to track duplicates --- */
+/* ========== error tracking ========== */
+
+/* simple structure to track duplicate error messages */
+/* prevents the same error from being reported multiple times */
 #define MAX_ERRORS 1000
-static char *errorMsgs[MAX_ERRORS];
-static int errorCount = 0;
+static char *errorMsgs[MAX_ERRORS];  // array of error message strings
+static int errorCount = 0;            // number of errors recorded
 
 /* error handler */
 static int already_reported(const char *msg) {
@@ -43,7 +75,7 @@ static void sem_error(int lineno, const char *fmt, ...) {
     }
 }
 
-/* pass A - build symbol table */
+/* pass a - build symbol table */
 static void semantic_passA_build(SymTable *curScope, AST *node);
 
 static AST *get_class_body(AST *classNode) {
@@ -54,7 +86,20 @@ static AST *get_class_body(AST *classNode) {
 }
 
 static int is_numeric_type(const char *typeName) {
-    return typeName && (strcmp(typeName, "int") == 0 || strcmp(typeName, "float") == 0);
+    return typeName && (strcmp(typeName, "int") == 0 || strcmp(typeName, "float") == 0 || strcmp(typeName, "integer") == 0);
+}
+
+/* check IF a TYPE name is valid (built-in or declared class) */
+static int is_valid_type(SymTable *globalScope, const char *typeName) {
+    if (!typeName) return 0;
+    /* built-in types */
+    if (strcmp(typeName, "int") == 0 || strcmp(typeName, "integer") == 0 ||
+        strcmp(typeName, "float") == 0 || strcmp(typeName, "void") == 0) {
+        return 1;
+    }
+    /* check IF it's a declared class */
+    Symbol *classSym = symtable_lookup(globalScope, typeName);
+    return (classSym && classSym->kind == SYM_CLASS);
 }
 
 static void passA_walk_list(SymTable *curScope, AST *list) {
@@ -75,57 +120,113 @@ static void semantic_passA_build(SymTable *curScope, AST *node) {
 
     switch (node->kind) {
         case NODE_CLASS_DECL: {
-            if (symtable_insert(curScope, node->name,
-                                node->name,
-                                SYM_CLASS, node->lineno)) {
-                sem_error(node->lineno,
-                          "Class '%s' redeclared in scope '%s'",
-                          node->name,
-                          curScope->scopeName ? curScope->scopeName : "<global>");
+            /* check IF class already exists in current scope only (not parent scopes) */
+            Symbol *existing = NULL;
+            for (Symbol *p = curScope->symbols; p; p = p->next) {
+                if (p->name && node->name && strcmp(p->name, node->name) == 0 && p->kind == SYM_CLASS) {
+                    existing = p;
+                    break;
+                }
+            }
+            
+            if (existing) {
+                /* class already exists in this scope - check IF it's the same declaration */
+                if (existing->lineno == node->lineno) {
+                    /* same line number - likely duplicate processing, skip error */
+                    /* still create scope IF it doesn't exist */
+                    SymTable *classScope = symtable_find_scope(globalTable, node->name, curScope);
+                    if (!classScope) {
+                        classScope = symtable_create(node->name, curScope);
+                        symtable_register_scope(classScope);
+                    }
+                    AST *body = get_class_body(node);
+                    if (body) passA_walk_list(classScope, body);
+                } else {
+                    /* different line number - real redeclaration */
+                    sem_error(node->lineno,
+                              "Class '%s' redeclared in scope '%s'",
+                              node->name,
+                              curScope->scopeName ? curScope->scopeName : "<global>");
+                }
             } else {
-                SymTable *classScope = symtable_create(node->name, curScope);
-                symtable_register_scope(classScope);
-                AST *body = get_class_body(node);
-                if (body) passA_walk_list(classScope, body);
+                /* class doesn't exist - insert it */
+                if (symtable_insert(curScope, node->name,
+                                    node->name,
+                                    SYM_CLASS, node->lineno)) {
+                    /* insert failed - should not happen IF we checked above */
+                    sem_error(node->lineno,
+                              "Class '%s' redeclared in scope '%s'",
+                              node->name,
+                              curScope->scopeName ? curScope->scopeName : "<global>");
+                } else {
+                    SymTable *classScope = symtable_create(node->name, curScope);
+                    symtable_register_scope(classScope);
+                    AST *body = get_class_body(node);
+                    if (body) passA_walk_list(classScope, body);
+                }
             }
             break;
         }
         case NODE_FUNC_DECL: {
-            if (symtable_insert(curScope, node->name,
-                                node->typeName ? node->typeName : "<nil>",
-                                SYM_FUNC, node->lineno)) {
-                sem_error(node->lineno,
-                          "Function '%s' redeclared in scope '%s'",
-                          node->name,
-                          curScope->scopeName ? curScope->scopeName : "<global>");
-            } else {
-                SymTable *fnScope = symtable_create(node->name, curScope);
-                symtable_register_scope(fnScope);
-
-                AST *param = node->child;
-                Symbol *funcSym = symtable_lookup(curScope, node->name);
-                bind_function_params(funcSym, param);
-
-                for (AST *pp = param; pp; pp = pp->sibling) {
-                    if (symtable_insert(fnScope, pp->name,
-                                        pp->typeName ? pp->typeName : "<nil>",
-                                        SYM_PARAM, pp->lineno)) {
-                        sem_error(pp->lineno,
-                                  "Parameter '%s' duplicated in function '%s'",
-                                  pp->name, node->name);
-                    }
+            /* check IF function already exists in current scope only */
+            Symbol *existing = NULL;
+            for (Symbol *p = curScope->symbols; p; p = p->next) {
+                if (p->name && node->name && strcmp(p->name, node->name) == 0 && p->kind == SYM_FUNC) {
+                    existing = p;
+                    break;
                 }
+            }
+            
+            if (existing) {
+                /* function already exists - check IF it's the same declaration */
+                if (existing->lineno == node->lineno) {
+                    /* same line number - likely duplicate processing, skip error */
+                    /* don't reprocess - function already exists with parameters and scope */
+                } else {
+                    /* different line number - real redeclaration */
+                    sem_error(node->lineno,
+                              "Function '%s' redeclared in scope '%s'",
+                              node->name,
+                              curScope->scopeName ? curScope->scopeName : "<global>");
+                }
+            } else {
+                /* function doesn't exist - insert it */
+                if (symtable_insert(curScope, node->name,
+                                    node->typeName ? node->typeName : "<nil>",
+                                    SYM_FUNC, node->lineno)) {
+                    sem_error(node->lineno,
+                              "Function '%s' redeclared in scope '%s'",
+                              node->name,
+                              curScope->scopeName ? curScope->scopeName : "<global>");
+                } else {
+                    SymTable *fnScope = symtable_create(node->name, curScope);
+                    symtable_register_scope(fnScope);
 
-                AST *body = node->extra;
-                if (body && body->child) {
-                    for (AST *st = body->child; st; st = st->sibling) {
-                        if (st->kind == NODE_VAR_DECL) {
-                            if (symtable_insert(fnScope, st->name,
-                                                st->typeName ? st->typeName : "<nil>",
-                                                SYM_VAR, st->lineno)) {
-                                sem_error(st->lineno,
-                                          "Local variable '%s' redeclared in function '%s'",
-                                          st->name, node->name);
+                    AST *param = node->child;
+                    Symbol *funcSym = symtable_lookup(curScope, node->name);
+                    bind_function_params(funcSym, param);
+
+                    for (AST *pp = param; pp; pp = pp->sibling) {
+                        if (symtable_insert(fnScope, pp->name,
+                                            pp->typeName ? pp->typeName : "<nil>",
+                                            SYM_PARAM, pp->lineno)) {
+                            sem_error(pp->lineno,
+                                      "Parameter '%s' duplicated in function '%s'",
+                                      pp->name, node->name);
+                        }
+                    }
+
+                    AST *body = node->extra;
+                    if (body && body->child) {
+                        for (AST *st = body->child; st; st = st->sibling) {
+                            if (st->kind == NODE_VAR_DECL) {
+                                if (symtable_insert(fnScope, st->name,
+                                                    st->typeName ? st->typeName : "<nil>",
+                                                    SYM_VAR, st->lineno)) {
+                                    sem_error(st->lineno,
+                                              "Local variable '%s' redeclared in function '%s'",
+                                              st->name, node->name);
+                                }
                             }
                         }
                     }
@@ -136,18 +237,46 @@ static void semantic_passA_build(SymTable *curScope, AST *node) {
         case NODE_ATTRIBUTE: {
             AST *var = node->child;
             if (var) {
-                if (symtable_insert(curScope, var->name,
-                                    var->typeName ? var->typeName : "<nil>",
-                                    SYM_ATTR, var->lineno)) {
-                    sem_error(var->lineno,
-                              "Attribute '%s' redeclared in scope '%s'",
-                              var->name,
-                              curScope->scopeName ? curScope->scopeName : "<global>");
+                /* check IF attribute already exists in current scope */
+                Symbol *existing = NULL;
+                for (Symbol *p = curScope->symbols; p; p = p->next) {
+                    if (p->name && var->name && strcmp(p->name, var->name) == 0 && p->kind == SYM_ATTR) {
+                        existing = p;
+                        break;
+                    }
+                }
+                
+                if (existing) {
+                    /* attribute already exists - check IF it's the same declaration */
+                    if (existing->lineno != var->lineno) {
+                        /* different line number - real redeclaration */
+                        sem_error(var->lineno,
+                                  "Attribute '%s' redeclared in scope '%s'",
+                                  var->name,
+                                  curScope->scopeName ? curScope->scopeName : "<global>");
+                    }
+                    /* same line number - duplicate processing, skip */
+                } else {
+                    /* attribute doesn't exist - insert it */
+                    if (symtable_insert(curScope, var->name,
+                                        var->typeName ? var->typeName : "<nil>",
+                                        SYM_ATTR, var->lineno)) {
+                        sem_error(var->lineno,
+                                  "Attribute '%s' redeclared in scope '%s'",
+                                  var->name,
+                                  curScope->scopeName ? curScope->scopeName : "<global>");
+                    }
                 }
             }
             break;
         }
         case NODE_VAR_DECL: {
+            /* check IF TYPE is valid - but only IF globaltable is initialized */
+            if (node->typeName && globalTable && !is_valid_type(globalTable, node->typeName)) {
+                sem_error(node->lineno,
+                          "Undeclared type '%s' for variable '%s'",
+                          node->typeName, node->name ? node->name : "<unknown>");
+            }
             if (symtable_insert(curScope, node->name,
                                 node->typeName ? node->typeName : "<nil>",
                                 SYM_VAR, node->lineno)) {
@@ -155,6 +284,30 @@ static void semantic_passA_build(SymTable *curScope, AST *node) {
                           "Variable '%s' redeclared in scope '%s'",
                           node->name,
                           curScope->scopeName ? curScope->scopeName : "<global>");
+            }
+            break;
+        }
+        case NODE_EMPTY: {
+            /* handle impldef nodes: node->name is the class name being implemented */
+            /* find the class scope and process function definitions in that scope */
+            /* note: impldef may be processed before classdecl, so class scope might not exist yet */
+            if (node->name) {
+                /* try to find existing class scope */
+                SymTable *classScope = symtable_find_scope(globalTable, node->name, NULL);
+                if (classScope) {
+                    /* class scope exists - process function definitions in that scope */
+                    if (node->child)
+                        passA_walk_list(classScope, node->child);
+                } else {
+                    /* class scope doesn't exist yet (impldef before classdecl) */
+                    /* process children in current scope - class will be found in pass b */
+                    if (node->child)
+                        passA_walk_list(curScope, node->child);
+                }
+            } else {
+                /* no name - just process children (e.g., EMPTY statblock) */
+                if (node->child)
+                    passA_walk_list(curScope, node->child);
             }
             break;
         }
@@ -175,7 +328,7 @@ void semantic_passA(AST *root) {
         semantic_passA_build(globalTable, p);
 }
 
-/* passB - semantic check */
+/* passb - semantic check */
 
 static const char *resolve_type_of_expr(SymTable *curScope, AST *expr);
 
@@ -188,11 +341,23 @@ static const char *resolve_type_of_expr(SymTable *curScope, AST *expr) {
         case NODE_STRING_LITERAL: return "string";
 
         case NODE_ID: {
+            /* special-case implicit 'self' receiver: allow it even IF there is
+             * no explicit symbol table entry, and treat it as an opaque type */
+            if (expr->name && strcmp(expr->name, "self") == 0) {
+                return "<self>";
+            }
             Symbol *s = symtable_lookup(curScope, expr->name);
             if (!s) {
                 sem_error(expr->lineno,
                           "Identifier '%s' used before declaration",
                           expr->name);
+                return "<error>";
+            }
+            /* check IF variable is used before its declaration (compare line numbers) */
+            if (s->kind == SYM_VAR && expr->lineno < s->lineno) {
+                sem_error(expr->lineno,
+                          "Identifier '%s' used before declaration (declared at line %d)",
+                          expr->name, s->lineno);
                 return "<error>";
             }
             return s->typeName ? s->typeName : "<nil>";
@@ -214,7 +379,7 @@ static const char *resolve_type_of_expr(SymTable *curScope, AST *expr) {
                 int leftNum = (strcmp(lt, "int") == 0 || strcmp(lt, "float") == 0);
                 int rightNum = (strcmp(rt, "int") == 0 || strcmp(rt, "float") == 0);
                 if (leftNum && rightNum) {
-                    // if either is float, promote result to float
+                    // IF either is float, promote result to float
                     if (strcmp(lt, "float") == 0 || strcmp(rt, "float") == 0)
                         return "float";
                     return "int";
@@ -375,6 +540,15 @@ static void semantic_passB_visit(AST *node, SymTable *scope, const char *current
                 semantic_passB_visit(p->child, scope, currentReturn);
                 continue;
             }
+            case NODE_VAR_DECL: {
+                /* in pass b, check IF TYPE is valid for variables declared in function body */
+                if (p->typeName && globalTable && !is_valid_type(globalTable, p->typeName)) {
+                    sem_error(p->lineno,
+                              "Undeclared type '%s' for variable '%s'",
+                              p->typeName, p->name ? p->name : "<unknown>");
+                }
+                break;
+            }
             case NODE_ASSIGN:
                 check_assignment(p, scope);
             break;
@@ -382,7 +556,8 @@ static void semantic_passB_visit(AST *node, SymTable *scope, const char *current
                 AST *v = p->child;
             if (!v || v->kind != NODE_ID)
                     sem_error(p->lineno, "READ expects an identifier");
-                else if (!symtable_lookup(scope, v->name))
+                else if (!(v->name && strcmp(v->name, "self") == 0) &&
+                         !symtable_lookup(scope, v->name))
                 sem_error(v->lineno, "READ on undeclared variable '%s'", v->name);
             break;
         }
