@@ -2,8 +2,10 @@
 func testArithMismatch() -> integer {
     local x : integer;
     local y : integer;
+    local str : string;
     x := 5;
-    y := x + "hello";  // error: cannot add integer and string
+    y := x + str;  // error: cannot add integer and string
     return(y);
 }
+
 

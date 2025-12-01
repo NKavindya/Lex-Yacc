@@ -3,3 +3,4 @@ func duplicateParams(a : integer, a : integer) -> integer {  // error: duplicate
     return(a + a);
 }
 
+

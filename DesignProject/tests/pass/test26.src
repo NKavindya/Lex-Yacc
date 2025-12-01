@@ -1,0 +1,10 @@
+// empty array size declaration
+func testEmptyArray() -> integer {
+    local arr : integer[];
+    local i : integer;
+    i := 0;
+    arr[i] := 10;
+    return(arr[i]);
+}
+
+

@@ -1,0 +1,12 @@
+// Test: Multiple parameters (fParamsTailList and aParamsTailList)
+func multiParams(a : integer, b : float, c : integer) => integer {
+    local result : integer;
+    result := a + c;
+    return (result);
+}
+
+func testMultiParams() => void {
+    local x : integer;
+    x := multiParams(1, 2.5, 3);
+}
+

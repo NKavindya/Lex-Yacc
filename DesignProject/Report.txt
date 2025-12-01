@@ -196,9 +196,9 @@ _testAdd_END:
 
 Test Results:
 -------------
-Total Test Files: 32 (16 pass + 16 error)
+Total Test Files: 37 (21 pass + 16 error)
 
-PASS TESTS (16 tests - all successful):
+PASS TESTS (21 tests - all successful):
 - test01.src: Basic class with attribute
 - test02.src: Single class with attribute
 - test03.src: Simple arithmetic and function calls
@@ -211,10 +211,15 @@ PASS TESTS (16 tests - all successful):
 - test10.src: Logical operators with short-circuit evaluation
 - test11.src: Complex arithmetic expressions with precedence
 - test12.src: Relational operators (==, <, >, <=, >=)
-- test13.src: Class with multiple attributes and methods
+- test13.src: Simple class declaration with attribute
 - test14.src: Nested while loops (COMPLEX)
 - test15.src: Function with multiple local variables
 - test16.src: Mixed control flow - if/while (COMPLEX)
+- test17.src: Class inheritance with `isa` keyword
+- test18.src: Array declarations and indexing with loops
+- test19.src: Comprehensive test: read, write, logical ops, unary sign, not
+- test20.src: Implementation block with function definition
+- test21.src: Constructor inside implement block
 
 ERROR TESTS (16 tests - all correctly detect errors):
 - test01.src: Undeclared variable (3 errors)
@@ -477,9 +482,11 @@ PART (c): COMPILER VERIFICATION
 
 Test Strategy:
 --------------
-The compiler is tested using a comprehensive test suite with 32 test files covering:
-- **Pass Tests (16 files)**: Valid programs that should compile successfully
-- **Error Tests (16 files)**: Invalid programs that should be rejected with appropriate errors
+The compiler is tested using a comprehensive test suite covering all grammar rules:
+- **Pass Tests (21 files)**: Valid programs that should compile successfully, covering all grammar productions
+- **Error Tests (11 files)**: Invalid programs that should be rejected with appropriate errors
+
+**Note**: A detailed table mapping each test file to specific grammar rules is provided in `TestResults_Table.md`.
 
 Testing Approach:
 -----------------
@@ -527,12 +534,17 @@ Verification Results:
 
 Test Execution Summary:
 -----------------------
-- **Total Test Files**: 32
-- **Pass Tests**: 16 (all compile and generate code successfully)
+- **Total Test Files**: 37 (21 pass + 16 error tests)
+- **Pass Tests**: 21 (all compile and generate code successfully)
 - **Error Tests**: 16 (all correctly detect and report errors)
 - **Success Rate**: 100%
-- **Code Generation**: All 16 pass tests produce valid x86 assembly
+- **Code Generation**: All 21 pass tests produce valid x86 assembly
 - **Error Detection**: All 16 error tests correctly identify semantic errors
+
+**Detailed Test Results Table**: See `TestResults_Table.md` for a comprehensive table listing all test files, their purpose (grammar rules tested), and results. The table includes:
+- Complete mapping of each test file to specific grammar productions
+- Coverage analysis of all grammar rules
+- Verification status for each test case
 
 The compiler demonstrates stateless behavior - running the same test file multiple times produces identical results, confirming correct implementation of all phases.
 

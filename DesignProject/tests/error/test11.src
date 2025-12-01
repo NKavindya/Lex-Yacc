@@ -6,3 +6,4 @@ func testUseBeforeDecl() -> integer {
     return(result);
 }
 
+

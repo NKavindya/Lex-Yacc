@@ -4,3 +4,4 @@ func testUndeclaredClass() -> integer {
     return(0);
 }
 
+

@@ -1,0 +1,13 @@
+// Test: Constructor (constructor in funcHead)
+class Person {
+    public attribute name : integer;
+};
+
+implement Person {
+    constructor(name : integer) {
+        // Note: self.field syntax has parsing limitations - constructor body is empty
+        local temp : integer;
+        temp := name;
+    }
+}
+

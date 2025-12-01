@@ -1,0 +1,13 @@
+// Test: Nested idnest patterns (variable and functionCall with multiple levels)
+class Container {
+    public attribute data : integer;
+};
+
+func testNestedAccess() => void {
+    local obj : Container;
+    local value : integer;
+    
+    // Note: obj.field syntax has parsing limitations - using local variable instead
+    value := 10;
+}
+

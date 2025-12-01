@@ -1,0 +1,10 @@
+// Test: Empty parameter lists (fParams and aParams epsilon)
+func noParams() => void {
+    local x : integer;
+    x := 10;
+}
+
+func testEmptyParams() => void {
+    noParams();
+}
+

@@ -1,5 +1,0 @@
-func bad(a : int) -> int {
-    local result : int;
-    result := a + x;
-    return(result);
-}

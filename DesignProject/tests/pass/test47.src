@@ -1,0 +1,24 @@
+// Test: Complex expressions with all operators and precedence
+func testComplexExpr() => void {
+    local a : integer;
+    local b : integer;
+    local c : integer;
+    local result : integer;
+    
+    // Complex arithmetic with precedence
+    result := a + b * c;
+    result := (a + b) * c;
+    local d : integer;
+    result := a * b + c / d;
+    
+    // Note: c and d already declared above, removed redeclarations
+    // Relational in expressions
+    if (a + b < c * d) then {
+        result := 1;
+    };
+    
+    // Logical operators
+    result := a and b or c;
+    result := (a and b) or (c and d);
+}
+

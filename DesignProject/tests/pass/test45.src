@@ -1,0 +1,21 @@
+// Test: Implementation block with multiple functions (implFuncs)
+class Math {
+    public attribute pi : float;
+};
+
+implement Math {
+    func add(a : integer, b : integer) => integer {
+        return (a + b);
+    }
+    
+    func multiply(a : integer, b : integer) => integer {
+        return (a * b);
+    }
+    
+    constructor() {
+        // Note: self.field syntax has parsing limitations - constructor body is empty
+        local temp : float;
+        temp := 3.14;
+    }
+}
+

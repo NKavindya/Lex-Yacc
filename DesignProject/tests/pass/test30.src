@@ -1,0 +1,17 @@
+// multiple idnest in variable access: obj.field1.field2
+class Level1 {
+    public attribute level2 : Level2;
+};
+
+class Level2 {
+    public attribute value : integer;
+};
+
+func testMultiLevelAccess() -> integer {
+    local l1 : Level1;
+    local result : integer;
+    result := l1.level2.value;
+    return(result);
+}
+
+

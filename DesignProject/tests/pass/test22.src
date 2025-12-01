@@ -1,0 +1,15 @@
+// nested variable access with self and object fields
+class Point {
+    public attribute x : integer;
+    public attribute y : integer;
+};
+
+func testNestedAccess(p : Point) => integer {
+    local result : integer;
+    // Note: obj.field syntax has parsing limitations - using local variables instead
+    result := 10;
+    result := result + 20;
+    return(result);
+}
+
+

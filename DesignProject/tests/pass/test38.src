@@ -1,0 +1,13 @@
+// Test: Array indices (indice and indiceList)
+func testArrayIndices() => void {
+    local arr : integer[10];
+    local matrix : integer[5][5];
+    local value : integer;
+    
+    value := arr[0];
+    value := arr[1 + 2];
+    value := matrix[0][1];
+    arr[0] := 10;
+    matrix[1][2] := 20;
+}
+

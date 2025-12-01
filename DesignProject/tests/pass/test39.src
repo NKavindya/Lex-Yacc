@@ -1,0 +1,8 @@
+// Test: Multiple array dimensions (arraySizes)
+func testMultiDimArrays() => void {
+    local arr1 : integer[10];
+    local arr2 : integer[5][10];
+    local arr3 : integer[3][4][5];
+    local arr4 : integer[];
+}
+

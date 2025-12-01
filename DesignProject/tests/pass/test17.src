@@ -1,0 +1,4 @@
+// class inheritance example
+class Sprite isa Drawable {
+    public attribute frames : integer;
+};

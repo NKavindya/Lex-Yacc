@@ -1,0 +1,17 @@
+// array indexing with nested access
+class Matrix {
+    public attribute grid : integer[10][10];
+};
+
+func testArrayNestedAccess() => integer {
+    local m : Matrix;
+    local i : integer;
+    local j : integer;
+    local arr : integer[10][10];
+    i := 0;
+    j := 0;
+    arr[i][j] := 42;
+    return(arr[i][j]);
+}
+
+

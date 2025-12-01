@@ -1,0 +1,8 @@
+// Test: memberDecl (funcDecl and attributeDecl)
+class TestMembers {
+    public attribute attr1 : integer;
+    public attribute attr2 : float;
+    
+    public func method1() -> void;
+};
+

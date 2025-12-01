@@ -41,11 +41,20 @@ int comment_start_column = 0;
 %option noyywrap
 %x COMMENT
 
+/* Lexical element patterns */
+/* Grammar: digit -> 0 ...9 */
 DIGIT           [0-9]
+/* Grammar: letter -> a ...z | A ...Z */
 ID_START        [A-Za-z_]
+/* Grammar: alphanum -> letter | digit | _ */
 ID_PART         [A-Za-z0-9_]
+/* Grammar: integer -> nonzero digit* | 0, where nonzero -> 1 ...9 */
 INT_LITERAL     0|[1-9][0-9]*
+/* Grammar: exponent part [e [+ | –] integer] */
 EXP             [eE][+-]?{DIGIT}+
+/* Grammar: float -> integer fraction [e [+ | –] integer]
+ *   where fraction -> . digit* nonzero | .0
+ */
 FLOAT_LITERAL   ({INT_LITERAL}"."{DIGIT}+({EXP})?)|({INT_LITERAL}{EXP})
 
 %%
@@ -53,7 +62,7 @@ FLOAT_LITERAL   ({INT_LITERAL}"."{DIGIT}+({EXP})?)|({INT_LITERAL}{EXP})
 [ \t\r]+              { /* whitespace handled in YY_USER_ACTION */ }
 \n                    { current_line++; current_column = 1; }
 
-"//".*                { /* skip single-line comments */ }
+"//".*                { /* Grammar: Inline comments start with // and end with the end of the line */ }
 
 "/*"                  {
                         comment_start_line = current_line;
@@ -74,65 +83,66 @@ FLOAT_LITERAL   ({INT_LITERAL}"."{DIGIT}+({EXP})?)|({INT_LITERAL}{EXP})
                         return 0;
                       }
 
-"integer"             { RETURN_KEYWORD(INTEGER_T, "INTEGER"); }
-"int"                 { RETURN_KEYWORD(INTEGER_T, "INTEGER"); }
-"float"               { RETURN_KEYWORD(FLOAT_T, "FLOAT"); }
-"class"               { RETURN_KEYWORD(CLASS, "CLASS"); }
-"implement"           { RETURN_KEYWORD(IMPLEMENT, "IMPLEMENT"); }
-"func"                { RETURN_KEYWORD(FUNC, "FUNC"); }
-"construct"           { RETURN_KEYWORD(CONSTRUCT, "CONSTRUCT"); }
-"attribute"           { RETURN_KEYWORD(ATTRIBUTE, "ATTRIBUTE"); }
-"public"              { RETURN_KEYWORD(PUBLIC, "PUBLIC"); }
-"private"             { RETURN_KEYWORD(PRIVATE, "PRIVATE"); }
-"return"              { RETURN_KEYWORD(RETURN, "RETURN"); }
-"read"                { RETURN_KEYWORD(READ, "READ"); }
-"write"               { RETURN_KEYWORD(WRITE, "WRITE"); }
-"if"                  { RETURN_KEYWORD(IF, "IF"); }
-"else"                { RETURN_KEYWORD(ELSE, "ELSE"); }
-"while"               { RETURN_KEYWORD(WHILE, "WHILE"); }
-"void"                { RETURN_KEYWORD(VOID, "VOID"); }
-"self"                { RETURN_KEYWORD(SELF, "SELF"); }
-"isa"                 { RETURN_KEYWORD(ISA, "ISA"); }
-"local"               { RETURN_KEYWORD(LOCAL, "LOCAL"); }
-"then"                { RETURN_KEYWORD(THEN, "THEN"); }
-"and"                 { RETURN_KEYWORD(AND, "AND"); }
-"or"                  { RETURN_KEYWORD(OR, "OR"); }
-"not"                 { RETURN_KEYWORD(NOT, "NOT"); }
+"integer"             { RETURN_KEYWORD(INTEGER_T, "INTEGER"); }  /* Reserved Words - Grammar: integer, float, class, implement, func, construct/constructor, attribute, public, private, return, read, write, if, else, while, void, self, isa, local, then, and, or, not */
+"int"                 { RETURN_KEYWORD(INTEGER_T, "INTEGER"); }  /* Alias for integer */
+"float"               { RETURN_KEYWORD(FLOAT_T, "FLOAT"); }      /* Grammar: float */
+"class"               { RETURN_KEYWORD(CLASS, "CLASS"); }          /* Grammar: class */
+"implement"           { RETURN_KEYWORD(IMPLEMENT, "IMPLEMENT"); } /* Grammar: implement */
+"func"                { RETURN_KEYWORD(FUNC, "FUNC"); }          /* Grammar: func */
+"construct"           { RETURN_KEYWORD(CONSTRUCT, "CONSTRUCT"); } /* Grammar: construct */
+"constructor"         { RETURN_KEYWORD(CONSTRUCT, "CONSTRUCT"); }  /* Grammar: constructor */
+"attribute"           { RETURN_KEYWORD(ATTRIBUTE, "ATTRIBUTE"); } /* Grammar: attribute */
+"public"              { RETURN_KEYWORD(PUBLIC, "PUBLIC"); }        /* Grammar: public */
+"private"             { RETURN_KEYWORD(PRIVATE, "PRIVATE"); }     /* Grammar: private */
+"return"              { RETURN_KEYWORD(RETURN, "RETURN"); }       /* Grammar: return */
+"read"                { RETURN_KEYWORD(READ, "READ"); }           /* Grammar: read */
+"write"               { RETURN_KEYWORD(WRITE, "WRITE"); }        /* Grammar: write */
+"if"                  { RETURN_KEYWORD(IF, "IF"); }                 /* Grammar: if */
+"else"                { RETURN_KEYWORD(ELSE, "ELSE"); }           /* Grammar: else */
+"while"               { RETURN_KEYWORD(WHILE, "WHILE"); }         /* Grammar: while */
+"void"                { RETURN_KEYWORD(VOID, "VOID"); }          /* Grammar: void */
+"self"                { RETURN_KEYWORD(SELF, "SELF"); }           /* Grammar: self */
+"isa"                 { RETURN_KEYWORD(ISA, "ISA"); }             /* Grammar: isa */
+"local"               { RETURN_KEYWORD(LOCAL, "LOCAL"); }         /* Grammar: local */
+"then"                { RETURN_KEYWORD(THEN, "THEN"); }           /* Grammar: then */
+"and"                 { RETURN_KEYWORD(AND, "AND"); }             /* Grammar: and */
+"or"                  { RETURN_KEYWORD(OR, "OR"); }                /* Grammar: or */
+"not"                 { RETURN_KEYWORD(NOT, "NOT"); }             /* Grammar: not */
 
-":="                  { RETURN_TOKEN(ASSIGN, "ASSIGN"); }
-"=="                  { RETURN_TOKEN(EQ, "EQ"); }
-"<>"                  { RETURN_TOKEN(NE, "NE"); }
-"<="                  { RETURN_TOKEN(LE, "LE"); }
-">="                  { RETURN_TOKEN(GE, "GE"); }
-"<"                   { RETURN_TOKEN(LT, "LT"); }
-">"                   { RETURN_TOKEN(GT, "GT"); }
-"&&"                  { RETURN_TOKEN(AND, "AND"); }
-"||"                  { RETURN_TOKEN(OR, "OR"); }
+":="                  { RETURN_TOKEN(ASSIGN, "ASSIGN"); }  /* Operators - Grammar: assignOp -> :=, relOp -> == | <> | < | > | <= | >=, addOp -> + | - | or, multOp -> * | / | and */
+"=="                  { RETURN_TOKEN(EQ, "EQ"); }          /* Grammar: relOp -> == */
+"<>"                  { RETURN_TOKEN(NE, "NE"); }          /* Grammar: relOp -> <> */
+"<="                  { RETURN_TOKEN(LE, "LE"); }          /* Grammar: relOp -> <= */
+">="                  { RETURN_TOKEN(GE, "GE"); }          /* Grammar: relOp -> >= */
+"<"                   { RETURN_TOKEN(LT, "LT"); }          /* Grammar: relOp -> < */
+">"                   { RETURN_TOKEN(GT, "GT"); }          /* Grammar: relOp -> > */
+"&&"                  { RETURN_TOKEN(AND, "AND"); }         /* Alternative syntax for and */
+"||"                  { RETURN_TOKEN(OR, "OR"); }          /* Alternative syntax for or */
 
-"->"                  { RETURN_TOKEN(ARROW, "ARROW"); }
-"=>"                  { RETURN_TOKEN(ARROW, "ARROW"); }
+"->"                  { RETURN_TOKEN(ARROW, "ARROW"); }     /* Alternative arrow syntax */
+"=>"                  { RETURN_TOKEN(ARROW, "ARROW"); }    /* Grammar: => (arrow operator) */
 
-"+"                   { RETURN_TOKEN(PLUS, "PLUS"); }
-"-"                   { RETURN_TOKEN(MINUS, "MINUS"); }
-"*"                   { RETURN_TOKEN(MULT, "MULT"); }
-"/"                   { RETURN_TOKEN(DIV, "DIV"); }
+"+"                   { RETURN_TOKEN(PLUS, "PLUS"); }      /* Grammar: addOp -> +, sign -> + */
+"-"                   { RETURN_TOKEN(MINUS, "MINUS"); }    /* Grammar: addOp -> -, sign -> - */
+"*"                   { RETURN_TOKEN(MULT, "MULT"); }      /* Grammar: multOp -> * */
+"/"                   { RETURN_TOKEN(DIV, "DIV"); }        /* Grammar: multOp -> / */
 
-"("                   { RETURN_TOKEN(LPAREN, "LPAREN"); }
-")"                   { RETURN_TOKEN(RPAREN, "RPAREN"); }
-"{"                   { RETURN_TOKEN(LBRACE, "LBRACE"); }
-"}"                   { RETURN_TOKEN(RBRACE, "RBRACE"); }
-"["                   { RETURN_TOKEN(LBRACKET, "LBRACKET"); }
-"]"                   { RETURN_TOKEN(RBRACKET, "RBRACKET"); }
-","                   { RETURN_TOKEN(COMMA, "COMMA"); }
-";"                   { RETURN_TOKEN(SEMICOLON, "SEMICOLON"); }
-":"                   { RETURN_TOKEN(COLON, "COLON"); }
-"."                   { RETURN_TOKEN(DOT, "DOT"); }
+"("                   { RETURN_TOKEN(LPAREN, "LPAREN"); }  /* Grammar: ( - Punctuation: ( ) , { . } : [ => ] ; */
+")"                   { RETURN_TOKEN(RPAREN, "RPAREN"); }  /* Grammar: ) */
+"{"                   { RETURN_TOKEN(LBRACE, "LBRACE"); }  /* Grammar: { */
+"}"                   { RETURN_TOKEN(RBRACE, "RBRACE"); }  /* Grammar: } */
+"["                   { RETURN_TOKEN(LBRACKET, "LBRACKET"); } /* Grammar: [ */
+"]"                   { RETURN_TOKEN(RBRACKET, "RBRACKET"); } /* Grammar: ] */
+","                   { RETURN_TOKEN(COMMA, "COMMA"); }    /* Grammar: , */
+";"                   { RETURN_TOKEN(SEMICOLON, "SEMICOLON"); } /* Grammar: ; */
+":"                   { RETURN_TOKEN(COLON, "COLON"); }     /* Grammar: : */
+"."                   { RETURN_TOKEN(DOT, "DOT"); }        /* Grammar: . */
 
-({INT_LITERAL}"."{DIGIT}+|{INT_LITERAL})[eE][+-]? {
+({INT_LITERAL}"."{DIGIT}+|{INT_LITERAL})[eE][+-]? { /* Error: malformed float literal */
                         lex_support_record_error("Malformed float literal", current_line, token_start_column);
                       }
 
-{FLOAT_LITERAL}       {
+{FLOAT_LITERAL}       { /* Grammar: float -> integer fraction [e [+ | –] integer] */
                         yylval.dVal = strtod(yytext, NULL);
                         lex_support_record_token(FLOAT_LIT, "FLOAT_LIT",
                                                  yytext, current_line, token_start_column);
@@ -141,7 +151,7 @@ FLOAT_LITERAL   ({INT_LITERAL}"."{DIGIT}+({EXP})?)|({INT_LITERAL}{EXP})
                         return FLOAT_LIT;
                       }
 
-{INT_LITERAL}         {
+{INT_LITERAL}         { /* Grammar: integer -> nonzero digit* | 0 (intLit) */
                         yylval.iVal = atoi(yytext);
                         lex_support_record_token(INT_LIT, "INT_LIT",
                                                  yytext, current_line, token_start_column);
@@ -159,7 +169,7 @@ FLOAT_LITERAL   ({INT_LITERAL}"."{DIGIT}+({EXP})?)|({INT_LITERAL}{EXP})
                         return STRING_LIT;
                       }
 
-{ID_START}{ID_PART}*  {
+{ID_START}{ID_PART}*  { /* Grammar: id -> letter alphanum* */
                         yylval.sVal = strdup(yytext);
                         lex_support_record_token(ID, "ID",
                                                  yytext, current_line, token_start_column);

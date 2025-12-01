@@ -5,3 +5,4 @@ func voidFunction() -> void {
     return(x);  // error: void function should not return a value
 }
 
+

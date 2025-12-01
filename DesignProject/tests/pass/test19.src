@@ -1,0 +1,22 @@
+// read, write, logical ops, unary sign, not
+func process() -> integer {
+    local input : integer;
+    local output : integer;
+    local invert : integer;
+    local cond1 : integer;
+    local cond2 : integer;
+    read(input);
+    cond1 := input > 0;
+    cond2 := input <>0;
+    if (cond1 and cond2) then {
+        output := +(input * 2);
+    } else {
+        output := -input;
+    };
+    invert := not output;
+    while (input > 0) {
+        input := input - 1;
+    };
+    write(invert);
+    return(output);
+}

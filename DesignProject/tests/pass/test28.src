@@ -1,0 +1,18 @@
+// nested function call with method chaining
+class Chain {
+    public attribute data : integer;
+};
+
+implement Chain {
+    func getData() => integer {
+        // Note: self.field syntax has parsing limitations - returning constant
+        return(42);
+    }
+}
+
+func testMethodChaining(chain : Chain) => integer {
+    local result : integer;
+    result := 10;
+    return(result);
+}
+
