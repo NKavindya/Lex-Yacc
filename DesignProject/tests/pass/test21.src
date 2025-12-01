@@ -1,0 +1,6 @@
+// constructor inside implement block
+implement Builder {
+    construct (count : integer) {
+        count := count + 1;
+    }
+}

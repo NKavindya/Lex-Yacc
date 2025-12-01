@@ -1,0 +1,11 @@
+// arrays, indices, and loops
+func initMatrix(size : integer) -> integer {
+    local grid : integer[10][10];
+    local i : integer;
+    i := 0;
+    while (i < size) {
+        grid[i][i] := size;
+        i := i + 1;
+    };
+    return(size);
+}

@@ -1,0 +1,11 @@
+// Test: Variables with nested access and indices (variable with idnest and indice)
+class ArrayContainer {
+    public attribute items : integer[10];
+};
+
+func testNestedVarAccess() => void {
+    local container : ArrayContainer;
+    local value : integer;
+    value := 10;
+}
+

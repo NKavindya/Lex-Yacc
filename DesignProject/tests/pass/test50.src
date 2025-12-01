@@ -1,0 +1,14 @@
+// Test: All types (integer, float, id)
+class MyType {
+    public attribute value : integer;
+};
+
+func testTypes() => void {
+    local intVar : integer;
+    local floatVar : float;
+    local customVar : MyType;
+    
+    intVar := 10;
+    floatVar := 3.14;
+}
+

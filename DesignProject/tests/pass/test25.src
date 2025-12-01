@@ -1,0 +1,15 @@
+// multiple inheritance
+class Drawable {
+    public attribute visible : integer;
+};
+
+class Movable {
+    public attribute x : integer;
+    public attribute y : integer;
+};
+
+class Sprite isa Drawable, Movable {
+    public attribute frames : integer;
+};
+
+

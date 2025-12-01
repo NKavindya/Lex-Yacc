@@ -1,0 +1,26 @@
+// Test: All relational operators (relOp: ==, <>, <, >, <=, >=)
+func testRelOps() => void {
+    local x : integer;
+    local y : integer;
+    local result : integer;
+    
+    if (x == y) then {
+        result := 1;
+    };
+    if (x <> y) then {
+        result := 2;
+    };
+    if (x < y) then {
+        result := 3;
+    };
+    if (x > y) then {
+        result := 4;
+    };
+    if (x <= y) then {
+        result := 5;
+    };
+    if (x >= y) then {
+        result := 6;
+    };
+}
+

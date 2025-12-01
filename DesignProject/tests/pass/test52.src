@@ -1,0 +1,6 @@
+// Test: Visibility (public and private)
+class TestVisibility {
+    public attribute publicAttr : integer;
+    private attribute privateAttr : integer;
+};
+

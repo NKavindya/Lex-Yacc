@@ -1,0 +1,12 @@
+// Test: idOrSelf (id and self) - simplified
+class Counter {
+    public attribute count : integer;
+};
+
+implement Counter {
+    func reset() -> void {
+        local x : integer;
+        x := 0;
+    }
+}
+

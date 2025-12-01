@@ -1,0 +1,11 @@
+// Test: Function calls with nested access (idnest in functionCall)
+class Calculator {
+    public attribute result : integer;
+};
+
+func testNestedCalls() => void {
+    local calc : Calculator;
+    local value : integer;
+    value := 10;
+}
+

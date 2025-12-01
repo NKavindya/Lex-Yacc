@@ -1,0 +1,11 @@
+// Test: Standalone function definition (funcDef without class)
+func standaloneFunc() => void {
+    local x : integer;
+    x := 10;
+    write (x);
+}
+
+func anotherStandalone(a : integer, b : integer) => integer {
+    return (a + b);
+}
+

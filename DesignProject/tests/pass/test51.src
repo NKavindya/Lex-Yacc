@@ -1,0 +1,23 @@
+// Test: returnType (type and void)
+func returnsInt() => integer {
+    return (10);
+}
+
+func returnsFloat() => float {
+    return (3.14);
+}
+
+func returnsVoid() => void {
+    local x : integer;
+    x := 10;
+}
+
+class MyType {
+    public attribute value : integer;
+};
+
+func returnsCustom() -> integer {
+    local obj : MyType;
+    return (0);
+}
+

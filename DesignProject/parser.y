@@ -43,12 +43,12 @@ AST *astRoot = NULL;
 %left OR
 %left AND
 
-/* Expect some conflicts due to left-recursive nested access in LALR(1) parser */
+/* Expect some conflicts due to nested access patterns in LALR(1) parser */
 /* These conflicts are resolved correctly by Bison's default shift action */
-%expect 7
+%expect 3
 
 /* nonterminals carry AST */
-%type <node> statBlock statementList expr exprPrime relExpr arithExpr arithExprPrime term termPrime factor functionCall
+%type <node> statBlock statementList expr relExpr arithExpr arithExprPrime term termPrime factor functionCall
 %type <node> prog classOrImplOrFunc classDecl classInherit moreIds classBody memberDecl funcDecl implDef implFuncs
 %type <node> funcDef funcHead funcBody varDeclOrStmtList varDeclOrStmt
 %type <node> localVarDecl attributeDecl varDecl arraySizes arraySize statement assignStat
@@ -58,7 +58,9 @@ AST *astRoot = NULL;
 
 %%
 
-/* top-level - LL(1) right-recursive form: prog -> classOrImplOrFunc prog | epsilon */
+/* Grammar Rule: prog -> {{ classOrImplOrFunc }}
+ * LL(1) Transformation: prog -> classOrImplOrFunc prog | epsilon
+ */
 prog:
       classOrImplOrFunc prog
       {
@@ -73,7 +75,9 @@ prog:
       }
 ;
 
-/* classOrImplOrFunc -> classDecl | implDef | funcDef */
+/* Grammar Rule: classOrImplOrFunc -> structDecl | implDef | funcDef
+ * Note: structDecl is implemented as classDecl
+ */
 classOrImplOrFunc:
       classDecl
       {
@@ -92,7 +96,12 @@ classOrImplOrFunc:
       }
 ;
 
-/* CLASS */
+/* Grammar Rule: classDecl -> class id [[ isa id {{ , id }} ]] { {{ visibility memberDecl }} } ;
+ * LL(1) Transformation: classDecl -> CLASS ID classInherit { classBody } ;
+ *   where classInherit -> ISA ID moreIds | epsilon
+ *   and moreIds -> COMMA ID moreIds | epsilon
+ *   and classBody -> visibility memberDecl classBody | epsilon
+ */
 classDecl:
       CLASS ID classInherit LBRACE classBody RBRACE SEMICOLON
       {
@@ -104,6 +113,9 @@ classDecl:
       }
 ;
 
+/* Helper rule for: [[ isa id {{ , id }} ]]
+ * Grammar: Optional inheritance list
+ */
 classInherit:
       ISA ID moreIds
       {
@@ -121,6 +133,9 @@ classInherit:
       }
 ;
 
+/* Helper rule for: {{ , id }} in inheritance
+ * Grammar: Zero or more comma-separated parent class IDs
+ */
 moreIds:
       COMMA ID moreIds
       {
@@ -136,7 +151,9 @@ moreIds:
       }
 ;
 
-/* classBody - LL(1) right-recursive: classBody -> visibility memberDecl classBody | epsilon */
+/* Grammar Rule: {{{ visibility memberDecl }}}
+ * LL(1) Transformation: classBody -> visibility memberDecl classBody | epsilon
+ */
 classBody:
       PUBLIC memberDecl classBody
       {
@@ -165,7 +182,7 @@ classBody:
       }
 ;
 
-/* memberDecl -> funcDecl | attributeDecl */
+/* Grammar Rule: memberDecl -> funcDecl | attributeDecl */
 memberDecl:
       funcDecl
       {
@@ -179,7 +196,7 @@ memberDecl:
       }
 ;
 
-/* funcDecl -> funcHead ; */
+/* Grammar Rule: funcDecl -> funcHead ; */
 funcDecl:
       funcHead SEMICOLON
       {
@@ -188,7 +205,10 @@ funcDecl:
       }
 ;
 
-/* Implementation */
+/* Grammar Rule: implDef -> implement id { {{funcDef}} }
+ * LL(1) Transformation: implDef -> IMPLEMENT ID { implFuncs }
+ *   where implFuncs -> funcDef implFuncs | epsilon
+ */
 implDef:
       IMPLEMENT ID LBRACE implFuncs RBRACE
       {
@@ -199,6 +219,9 @@ implDef:
       }
 ;
 
+/* Helper rule for: {{funcDef}} in implDef
+ * Grammar: Zero or more function definitions
+ */
 implFuncs:
       funcDef implFuncs
       {
@@ -213,7 +236,7 @@ implFuncs:
       }
 ;
 
-/* Function definition */
+/* Grammar Rule: funcDef -> funcHead funcBody */
 funcDef:
       funcHead funcBody
       {
@@ -224,7 +247,7 @@ funcDef:
       }
 ;
 
-/* funcHead */
+/* Grammar Rule: funcHead -> func id ( fParams ) => returnType | constructor ( fParams ) */
 funcHead:
       FUNC ID LPAREN fParams RPAREN ARROW returnType
       {
@@ -246,7 +269,10 @@ funcHead:
       }
 ;
 
-/* function body */
+/* Grammar Rule: funcBody -> { {{varDeclOrStmt}} }
+ * LL(1) Transformation: funcBody -> { varDeclOrStmtList }
+ *   where varDeclOrStmtList -> varDeclOrStmt varDeclOrStmtList | epsilon
+ */
 funcBody:
       LBRACE varDeclOrStmtList RBRACE
       {
@@ -257,6 +283,9 @@ funcBody:
       }
 ;
 
+/* Helper rule for: {{varDeclOrStmt}} in funcBody
+ * Grammar: Zero or more variable declarations or statements
+ */
 varDeclOrStmtList:
       varDeclOrStmt varDeclOrStmtList
       {
@@ -272,6 +301,7 @@ varDeclOrStmtList:
       }
 ;
 
+/* Grammar Rule: localVarDeclOrStmt -> localVarDecl | statement */
 varDeclOrStmt:
       localVarDecl
       {
@@ -285,6 +315,7 @@ varDeclOrStmt:
       }
 ;
 
+/* Grammar Rule: localVarDecl -> local varDecl */
 localVarDecl:
       LOCAL varDecl
       {
@@ -293,6 +324,7 @@ localVarDecl:
       }
 ;
 
+/* Grammar Rule: attributeDecl -> attribute varDecl */
 attributeDecl:
       ATTRIBUTE varDecl
       {
@@ -303,6 +335,10 @@ attributeDecl:
       }
 ;
 
+/* Grammar Rule: varDecl -> id : type {{arraySize}} ;
+ * LL(1) Transformation: varDecl -> ID : type arraySizes ;
+ *   where arraySizes -> arraySize arraySizes | epsilon
+ */
 varDecl:
       ID COLON type arraySizes SEMICOLON
       {
@@ -316,6 +352,9 @@ varDecl:
       }
 ;
 
+/* Helper rule for: {{arraySize}} in varDecl
+ * Grammar: Zero or more array size specifications
+ */
 arraySizes:
       arraySize arraySizes
       {
@@ -329,6 +368,7 @@ arraySizes:
       }
 ;
 
+/* Grammar Rule: arraySize -> [ intLit ] | [ ] */
 arraySize:
       LBRACKET INT_LIT RBRACKET
       {
@@ -342,7 +382,10 @@ arraySize:
       }
 ;
 
-/* statements */
+/* Grammar Rule: statement -> assignStat ; | if ( relExpr ) then statBlock else statBlock ;
+ *   | while ( relExpr ) statBlock ; | read ( variable ) ; | write ( expr ) ;
+ *   | return ( expr ) ; | functionCall ;
+ */
 statement:
       assignStat SEMICOLON
       {
@@ -410,6 +453,7 @@ statement:
       }
 ;
 
+/* Grammar Rule: assignStat -> variable assignOp expr */
 assignStat:
       variable ASSIGN expr
       {
@@ -421,6 +465,9 @@ assignStat:
       }
 ;
 
+/* Helper rule for: {{statement}} in statBlock
+ * Grammar: Zero or more statements
+ */
 statementList:
       statement statementList
       {
@@ -436,6 +483,9 @@ statementList:
       }
 ;
 
+/* Grammar Rule: statBlock -> { {{statement}} } | statement | ϵ
+ * LL(1) Transformation: statBlock -> { statementList } | statement | epsilon
+ */
 statBlock:
       LBRACE statementList RBRACE
       {
@@ -454,62 +504,21 @@ statBlock:
       }
 ;
 
-/* expressions - LL(1) right-recursive form */
+/* Grammar Rule: expr -> arithExpr | relExpr */
 expr:
-      relExpr exprPrime
+      arithExpr
       {
-          log_production("expr -> relExpr exprPrime");
-          if ($2) {
-              /* Build left-associative tree from right-recursive parse */
-              AST *op = $2;
-              AST *left = $1;
-              AST *right = op->child ? op->child->sibling : NULL;
-              op->child = left;
-              if (right) {
-                  op->child->sibling = right;
-              }
-              $$ = op;
-          } else {
-              $$ = $1;
-          }
+          log_production("expr -> arithExpr");
+          $$ = $1;
+      }
+    | relExpr
+      {
+          log_production("expr -> relExpr");
+          $$ = $1;
       }
 ;
 
-exprPrime:
-      AND relExpr exprPrime
-      {
-          log_production("exprPrime -> AND relExpr exprPrime");
-          AST *op = ast_new(NODE_BINARY_OP, "and", @1.first_line);
-          op->child = $2;  /* right operand */
-          if ($3) {
-              /* Chain: (left AND right) AND next */
-              AST *chain = $3;
-              chain->child->sibling = op;  /* attach to chain */
-              $$ = chain;
-          } else {
-              $$ = op;
-          }
-      }
-    | OR relExpr exprPrime
-      {
-          log_production("exprPrime -> OR relExpr exprPrime");
-          AST *op = ast_new(NODE_BINARY_OP, "or", @1.first_line);
-          op->child = $2;
-          if ($3) {
-              AST *chain = $3;
-              chain->child->sibling = op;
-              $$ = chain;
-          } else {
-              $$ = op;
-          }
-      }
-    | /* empty */
-      {
-          log_production("exprPrime -> epsilon");
-          $$ = NULL;
-      }
-;
-
+/* Grammar Rule: relExpr -> arithExpr relOp arithExpr */
 relExpr:
       arithExpr EQ arithExpr
       {
@@ -559,13 +568,12 @@ relExpr:
           ast_append_child(n, $3);
           $$ = n;
       }
-    | arithExpr
-      {
-          log_production("relExpr -> arithExpr");
-          $$ = $1;
-      }
 ;
 
+/* Grammar Rule: arithExpr -> arithExpr addOp term | term
+ * LL(1) Transformation: arithExpr -> term arithExprPrime
+ *   where arithExprPrime -> addOp term arithExprPrime | epsilon
+ */
 arithExpr:
       term arithExprPrime
       {
@@ -585,6 +593,9 @@ arithExpr:
       }
 ;
 
+/* Helper rule for right-recursive arithExpr
+ * Eliminates left recursion: arithExpr -> arithExpr addOp term
+ */
 arithExprPrime:
       addOp term arithExprPrime
       {
@@ -607,6 +618,7 @@ arithExprPrime:
       }
 ;
 
+/* Grammar Rule: addOp -> + | - | or */
 addOp:
       PLUS
       {
@@ -625,6 +637,10 @@ addOp:
       }
 ;
 
+/* Grammar Rule: term -> term multOp factor | factor
+ * LL(1) Transformation: term -> factor termPrime
+ *   where termPrime -> multOp factor termPrime | epsilon
+ */
 term:
       factor termPrime
       {
@@ -644,6 +660,9 @@ term:
       }
 ;
 
+/* Helper rule for right-recursive term
+ * Eliminates left recursion: term -> term multOp factor
+ */
 termPrime:
       multOp factor termPrime
       {
@@ -666,6 +685,7 @@ termPrime:
       }
 ;
 
+/* Grammar Rule: multOp -> * | / | and */
 multOp:
       MULT
       {
@@ -684,6 +704,7 @@ multOp:
       }
 ;
 
+/* Grammar Rule: factor -> variable | functionCall | intLit | floatLit | ( arithExpr ) | not factor | sign factor */
 factor:
       variable
       {
@@ -731,7 +752,7 @@ factor:
       }
 ;
 
-/* sign -> + | - */
+/* Grammar Rule: sign -> + | - */
 sign:
       PLUS
       {
@@ -745,8 +766,9 @@ sign:
       }
 ;
 
-/* function call - functionCall -> idnestList id ( aParams ) */
-/* Split into explicit cases to avoid ambiguity */
+/* Grammar Rule: functionCall -> {{idnest}} id ( aParams )
+ * LL(1) Transformation: functionCall -> idnest DOT functionCall | ID ( aParams )
+ */
 functionCall:
       ID LPAREN aParams RPAREN
       {
@@ -773,8 +795,10 @@ functionCall:
       }
 ;
 
-/* variable -> idnestList id indiceList */
-/* Split into explicit cases to avoid ambiguity */
+/* Grammar Rule: variable -> {{idnest}} id {{indice}}
+ * LL(1) Transformation: variable -> idnest DOT variable | ID indiceList
+ *   where indiceList -> indice indiceList | epsilon
+ */
 variable:
       ID indiceList
       {
@@ -799,7 +823,9 @@ variable:
 
 
 
-/* idnest -> idOrSelf indiceList . | idOrSelf ( aParams ) . */
+/* Grammar Rule: idnest -> idOrSelf {{indice}}. | idOrSelf ( aParams ) .
+ * LL(1) Transformation: idnest -> idOrSelf indiceList DOT | idOrSelf ( aParams ) DOT
+ */
 idnest:
       idOrSelf indiceList DOT
       {
@@ -825,7 +851,7 @@ idnest:
       }
 ;
 
-/* idOrSelf -> id | self */
+/* Grammar Rule: idOrSelf -> id | self */
 idOrSelf:
       ID
       {
@@ -839,7 +865,9 @@ idOrSelf:
       }
 ;
 
-/* indiceList -> indice indiceList | epsilon */
+/* Helper rule for: {{indice}} in variable and idnest
+ * Grammar: Zero or more array indices
+ */
 indiceList:
       indice indiceList
       {
@@ -855,7 +883,7 @@ indiceList:
       }
 ;
 
-/* indice -> [ arithExpr ] */
+/* Grammar Rule: indice -> [ arithExpr ] */
 indice:
       LBRACKET arithExpr RBRACKET
       {
@@ -866,7 +894,10 @@ indice:
       }
 ;
 
-/* parameter lists */
+/* Grammar Rule: fParams -> id : type {{arraySize}} {{fParamsTail}} | ϵ
+ * LL(1) Transformation: fParams -> ID : type arraySizes fParamsTailList | epsilon
+ *   where fParamsTailList -> COMMA ID : type arraySizes fParamsTailList | epsilon
+ */
 fParams:
       ID COLON type arraySizes fParamsTailList
       {
@@ -886,6 +917,9 @@ fParams:
       }
 ;
 
+/* Helper rule for: {{fParamsTail}} in fParams
+ * Grammar Rule: fParamsTail -> , id : type {{arraySize}}
+ */
 fParamsTailList:
       COMMA ID COLON type arraySizes fParamsTailList
       {
@@ -905,6 +939,10 @@ fParamsTailList:
       }
 ;
 
+/* Grammar Rule: aParams -> expr {{aParamsTail}} | ϵ
+ * LL(1) Transformation: aParams -> expr aParamsTailList | epsilon
+ *   where aParamsTailList -> COMMA expr aParamsTailList | epsilon
+ */
 aParams:
       expr aParamsTailList
       {
@@ -920,6 +958,9 @@ aParams:
       }
 ;
 
+/* Helper rule for: {{aParamsTail}} in aParams
+ * Grammar Rule: aParamsTail -> , expr
+ */
 aParamsTailList:
       COMMA expr aParamsTailList
       {
@@ -935,7 +976,7 @@ aParamsTailList:
       }
 ;
 
-/* Normalize type names */
+/* Grammar Rule: type -> integer | float | id */
 type:
       INTEGER_T
       {
@@ -955,13 +996,9 @@ type:
           AST *t = ast_new(NODE_TYPE, $1, @1.first_line);
           $$ = t;
       }
-    | /* empty */
-      {
-          log_production("type -> epsilon");
-          $$ = NULL;
-      }
 ;
 
+/* Grammar Rule: returnType -> type | void */
 returnType:
       type
       {

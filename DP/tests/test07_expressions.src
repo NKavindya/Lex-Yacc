@@ -1,0 +1,10 @@
+func calculate ( a : integer , b : integer ) => integer {
+    local result : integer ;
+    result := ( a + b ) * 2 - 5 ;
+    if ( result >= 10 ) then {
+        return ( result ) ;
+    } else {
+        return ( 0 ) ;
+    } ;
+} ;
+

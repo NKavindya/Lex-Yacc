@@ -188,6 +188,11 @@ static const char *resolve_type_of_expr(SymTable *curScope, AST *expr) {
         case NODE_STRING_LITERAL: return "string";
 
         case NODE_ID: {
+            /* special-case implicit 'self' receiver: allow it even if there is
+             * no explicit symbol table entry, and treat it as an opaque type */
+            if (expr->name && strcmp(expr->name, "self") == 0) {
+                return "<self>";
+            }
             Symbol *s = symtable_lookup(curScope, expr->name);
             if (!s) {
                 sem_error(expr->lineno,
@@ -382,7 +387,8 @@ static void semantic_passB_visit(AST *node, SymTable *scope, const char *current
                 AST *v = p->child;
             if (!v || v->kind != NODE_ID)
                     sem_error(p->lineno, "READ expects an identifier");
-                else if (!symtable_lookup(scope, v->name))
+                else if (!(v->name && strcmp(v->name, "self") == 0) &&
+                         !symtable_lookup(scope, v->name))
                 sem_error(v->lineno, "READ on undeclared variable '%s'", v->name);
             break;
         }

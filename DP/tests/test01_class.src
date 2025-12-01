@@ -1,0 +1,5 @@
+class MyClass {
+    public attribute x : integer ;
+    private attribute y : float ;
+} ;
+

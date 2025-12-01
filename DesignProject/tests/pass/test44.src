@@ -1,0 +1,11 @@
+// Test: Constructor (constructor in funcHead)
+class Person {
+    public attribute name : integer;
+};
+
+implement Person {
+    constructor(name : integer) {
+        self.name := name;
+    }
+}
+

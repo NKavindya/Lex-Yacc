@@ -1,0 +1,11 @@
+implement MyClass {
+    func method1 ( ) => void {
+        local x : integer ;
+        x := 5 ;
+    } ;
+    
+    func method2 ( param : float ) => integer {
+        return ( 10 ) ;
+    } ;
+} ;
+

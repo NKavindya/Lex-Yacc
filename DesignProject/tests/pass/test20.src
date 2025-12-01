@@ -1,0 +1,6 @@
+// implement block with a single function
+implement Worker {
+    func run(value : integer) -> integer {
+        return(value + 1);
+    }
+}

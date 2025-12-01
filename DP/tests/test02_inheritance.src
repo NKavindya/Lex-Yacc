@@ -1,0 +1,8 @@
+class Base {
+    public attribute value : integer ;
+} ;
+
+class Derived isa Base {
+    public attribute extra : float ;
+} ;
+

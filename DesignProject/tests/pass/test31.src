@@ -1,0 +1,5 @@
+// Test: Multiple inheritance (moreIds rule)
+class Child isa Parent1, Parent2, Parent3 {
+    public attribute value : integer;
+};
+

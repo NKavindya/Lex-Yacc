@@ -1,0 +1,15 @@
+func test ( ) => void {
+    local x : integer ;
+    x := 10 ;
+    
+    if ( x > 5 ) then {
+        write ( x ) ;
+    } else {
+        write ( 0 ) ;
+    } ;
+    
+    while ( x > 0 ) {
+        x := x - 1 ;
+    } ;
+} ;
+

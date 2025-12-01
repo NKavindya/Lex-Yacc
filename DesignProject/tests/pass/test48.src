@@ -1,0 +1,13 @@
+// Test: Sign operators (sign factor: + and -)
+func testSignOps() => void {
+    local x : integer;
+    local y : integer;
+    local pos : integer;
+    local neg : integer;
+    
+    pos := +x;
+    neg := -y;
+    pos := +10;
+    neg := -20;
+}
+

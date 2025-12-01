@@ -1,0 +1,11 @@
+// nested function calls with object access
+class Calculator {
+    public attribute value : integer;
+};
+
+func testNestedCall(calc : Calculator) -> integer {
+    local result : integer;
+    result := calc.value;
+    return(result);
+}
+

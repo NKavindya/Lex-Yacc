@@ -1,0 +1,30 @@
+// Test: Complex nested structures - all rules together
+class Parent {
+    public attribute value : integer;
+};
+
+class Child isa Parent {
+    public attribute childValue : integer[10];
+};
+
+implement Child {
+    constructor(initValue : integer) {
+        local j : integer;
+        j := 0;
+    }
+    
+    func calculate() -> integer {
+        local sum : integer;
+        sum := 0;
+        return (sum);
+    }
+}
+
+func main() => void {
+    local obj : Child;
+    local result : integer;
+    
+    result := 0;
+    write (result);
+}
+

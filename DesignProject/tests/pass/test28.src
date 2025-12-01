@@ -1,0 +1,15 @@
+// nested function call with method chaining
+class Chain {
+    public attribute data : integer;
+    
+    func getData() -> integer {
+        return(self.data);
+    };
+};
+
+func testMethodChaining(chain : Chain) -> integer {
+    local result : integer;
+    result := chain.getData();
+    return(result);
+}
+

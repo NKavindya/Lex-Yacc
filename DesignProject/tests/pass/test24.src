@@ -1,0 +1,10 @@
+// self keyword usage
+class Counter {
+    public attribute count : integer;
+    
+    func increment() -> void {
+        self.count := self.count + 1;
+    };
+};
+
+

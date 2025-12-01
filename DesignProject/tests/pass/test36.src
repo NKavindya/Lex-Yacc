@@ -1,0 +1,15 @@
+// Test: All arithmetic operators including or/and (addOp: +, -, or; multOp: *, /, and)
+func testAllOps() => void {
+    local a : integer;
+    local b : integer;
+    local c : integer;
+    local result : integer;
+    
+    result := a + b;
+    result := a - b;
+    result := a * b;
+    result := a / b;
+    result := a or b;
+    result := a and b;
+}
+

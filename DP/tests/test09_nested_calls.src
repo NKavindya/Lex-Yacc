@@ -1,0 +1,10 @@
+func outer ( ) => void {
+    local x : integer ;
+    x := inner ( 5 ) ;
+    write ( x ) ;
+} ;
+
+func inner ( n : integer ) => integer {
+    return ( n * 2 ) ;
+} ;
+

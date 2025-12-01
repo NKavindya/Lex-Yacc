@@ -1,0 +1,4 @@
+// Test: Empty function body (epsilon in varDeclOrStmtList)
+func emptyFunc() => void {
+}
+

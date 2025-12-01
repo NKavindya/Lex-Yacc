@@ -1,0 +1,17 @@
+// complex nested access: obj1.obj2.field
+class Inner {
+    public attribute value : integer;
+};
+
+class Outer {
+    public attribute inner : Inner;
+};
+
+func testComplexNested() -> integer {
+    local outer : Outer;
+    local result : integer;
+    result := outer.inner.value;
+    return(result);
+}
+
+

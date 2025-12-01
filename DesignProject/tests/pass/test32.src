@@ -1,0 +1,4 @@
+// Test: Empty class body (epsilon in classBody)
+class EmptyClass {
+};
+
