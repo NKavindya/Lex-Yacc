@@ -1,18 +1,50 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include "ast.h"
-#include "symbol_table.h"
+/* 
+ * semantic.c - Semantic Analysis Implementation
+ * 
+ * Performs semantic analysis of the AST in two passes:
+ * 
+ * Pass A (semantic_passA):
+ * - Builds symbol tables for all scopes (global, function, class, block)
+ * - Inserts symbols: classes, functions, variables, parameters, attributes
+ * - Establishes scope hierarchy (global -> function -> block)
+ * - Detects duplicate declarations in same scope
+ * - Calculates stack frame offsets for variables and parameters
+ * 
+ * Pass B (semantic_passB):
+ * - Type checking: verifies type compatibility in assignments and operations
+ * - Name resolution: checks that all identifiers are declared
+ * - Function call validation: verifies correct number and types of arguments
+ * - Expression type checking: ensures operations are performed on compatible types
+ * - Return type checking: verifies return statements match function return types
+ * 
+ * Error Reporting:
+ * - Collects semantic errors with line numbers
+ * - Writes errors to semantic_errors.txt
+ * - Prevents duplicate error messages
+ */
 
-/* globals */
+#include <stdio.h>        // Standard I/O (fprintf, FILE)
+#include <stdlib.h>       // Standard library (malloc, free)
+#include <string.h>       // String manipulation (strcmp, strdup)
+#include <stdarg.h>       // Variable argument lists (va_list, va_start, etc.)
+#include "ast.h"          // Abstract Syntax Tree structures
+#include "symbol_table.h" // Symbol table data structures and functions
+
+/* ========== Global Variables ========== */
+
+/* Global symbol table: root of scope hierarchy */
 SymTable *globalTable = NULL;
+
+/* Error output file: semantic errors are written here */
 FILE *errFile = NULL;
 
-/* --- simple structure to track duplicates --- */
+/* ========== Error Tracking ========== */
+
+/* Simple structure to track duplicate error messages */
+/* Prevents the same error from being reported multiple times */
 #define MAX_ERRORS 1000
-static char *errorMsgs[MAX_ERRORS];
-static int errorCount = 0;
+static char *errorMsgs[MAX_ERRORS];  // Array of error message strings
+static int errorCount = 0;            // Number of errors recorded
 
 /* error handler */
 static int already_reported(const char *msg) {

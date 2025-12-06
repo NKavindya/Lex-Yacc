@@ -1,36 +1,81 @@
-#include "codegen.h"
-#include "symbol_table.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
+/* 
+ * codegen.c - Code Generation Implementation
+ * 
+ * Generates code from the AST in multiple formats:
+ * 
+ * 1. Intermediate Representation (IR):
+ *    - 3-address code format (three-address code)
+ *    - Machine-independent representation
+ *    - Format: result = operand1 operator operand2
+ * 
+ * 2. x86-32 Assembly Code:
+ *    - Generates x86-32 assembly language
+ *    - Uses standard calling conventions (parameters at EBP+8, locals at EBP-offset)
+ *    - Manages register allocation (EAX, EBX, ECX, EDX, ESI, EDI)
+ *    - Handles function prologues/epilogues
+ *    - Generates code for: expressions, statements, function calls, control flow
+ * 
+ * 3. Relocatable Machine Code:
+ *    - Assembles assembly into relocatable object file format
+ *    - Can be linked with other object files
+ * 
+ * 4. Absolute Machine Code:
+ *    - Assembles assembly into absolute executable format
+ *    - Fixed memory addresses (ready to execute)
+ * 
+ * Architecture: x86-32 (32-bit x86)
+ * - Word size: 4 bytes
+ * - Stack grows downward
+ * - Calling convention: parameters pushed right-to-left, caller cleans stack
+ * - Registers: EAX, EBX, ECX, EDX, ESI, EDI (general purpose), EBP (frame pointer), ESP (stack pointer)
+ */
 
-/* string literal mapping for .data section */
+#include "codegen.h"      // Code generation function prototypes
+#include "symbol_table.h" // Symbol table for variable offsets and type information
+#include <stdio.h>         // Standard I/O (fprintf, FILE)
+#include <stdlib.h>       // Standard library (malloc, free, exit)
+#include <string.h>       // String manipulation (strcmp, strdup, sprintf)
+#include <stdarg.h>       // Variable argument lists (va_list, va_start, etc.)
+
+/* ========== String Literal Management ========== */
+/* Maps string literals to indices in .data section */
+
 typedef struct {
-    char *str;
-    int index;
+    char *str;    // String literal text
+    int index;    // Index in string literal table
 } StringMapping;
 
-static StringMapping string_map[100];
-static int string_map_count = 0;
+static StringMapping string_map[100];  // Array of string mappings
+static int string_map_count = 0;        // Number of strings in table
 
-/* float literal mapping for .data section */
+/* ========== Float Literal Management ========== */
+/* Maps float literals to indices in .data section */
+
 typedef struct {
-    double value;
-    int index;
+    double value; // Float literal value
+    int index;    // Index in float literal table
 } FloatMapping;
 
-static FloatMapping float_map[100];
-static int float_map_count = 0;
+static FloatMapping float_map[100];  // Array of float mappings
+static int float_map_count = 0;       // Number of floats in table
 
-/* x86-32 Architecture Configuration */
-#define REG_POOL 6  /* EAX, EBX, ECX, EDX, ESI, EDI (EBP and ESP are special) */
-#define WORD_SIZE 4  /* x86-32 uses 32-bit (4 bytes) words */
+/* ========== x86-32 Architecture Configuration ========== */
 
-/* x86 General Purpose Registers (excluding EBP, ESP which are special) */
+/* Register pool: number of general-purpose registers available for allocation */
+/* EAX, EBX, ECX, EDX, ESI, EDI (EBP and ESP are special-purpose) */
+#define REG_POOL 6
+
+/* Word size: x86-32 uses 32-bit (4 bytes) words */
+#define WORD_SIZE 4
+
+/* x86 General Purpose Register names (excluding EBP, ESP which are special) */
+/* Index mapping: 0=EAX, 1=EBX, 2=ECX, 3=EDX, 4=ESI, 5=EDI */
 static const char *REG_NAMES[REG_POOL] = {"EAX", "EBX", "ECX", "EDX", "ESI", "EDI"};
 
-/* IR temporary counter for 3AC */
+/* ========== IR Generation Support ========== */
+
+/* IR temporary counter: generates unique temporary variable names for 3-address code */
+/* Format: t0, t1, t2, ... */
 static int ir_temp_counter = 0;
 
 typedef struct {
