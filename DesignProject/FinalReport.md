@@ -89,7 +89,7 @@ Low Address (ESP)
 
 **Phase 1: Intermediate Representation (IR) Generation**
 
-**Purpose**: Generate machine-independent 3-address code (3AC) representation
+**Purpose of IR Phase**: The purpose of the IR phase is to generate a machine-independent intermediate representation in 3-address code format that serves as an abstraction layer between the AST and target-specific assembly code, enabling easier optimization and portability across different architectures.
 
 **AST Node Mappings**:
 - `NODE_ID` → `t0 = load var_name` or `t0 = param var_name`
@@ -109,7 +109,7 @@ Low Address (ESP)
 
 **Phase 2: Assembly Code Generation**
 
-**Purpose**: Generate x86-32 assembly code from AST
+**Purpose of ASM Phase**: The purpose of the ASM phase is to generate x86-32 assembly language code from the AST that can be assembled into executable machine code, translating high-level program constructs into low-level instructions while managing registers, stack frames, and calling conventions.
 
 **AST Node Mappings and Semantic Actions**:
 
@@ -208,31 +208,6 @@ Low Address (ESP)
 
 ---
 
-**Phase 3: Relocatable Machine Code Generation**
-
-**Purpose**: Convert assembly to relocatable object file format
-
-**Action**: `codegen_generate_relocatable()`
-- Parses assembly file
-- Estimates instruction sizes
-- Generates relocation table
-- Generates symbol table with function entry points
-- **Effect**: Creates object file that can be linked with other modules
-
----
-
-**Phase 4: Absolute Machine Code Generation**
-
-**Purpose**: Convert assembly to absolute executable format
-
-**Action**: `codegen_generate_absolute()`
-- Parses assembly file
-- Assigns fixed memory addresses (base: 0x00401000)
-- Resolves all symbols to absolute addresses
-- **Effect**: Creates executable file ready to run
-
----
-
 ## (b) Code Generation Implementation and Test Results
 
 **Target Architecture**: x86-32 (32-bit Intel x86)
@@ -242,8 +217,6 @@ Low Address (ESP)
 **Generated Outputs**:
 1. **Intermediate Representation** (`codegen.ir`): 3-address code format
 2. **Assembly Code** (`codegen.asm`): x86-32 assembly language
-3. **Relocatable Machine Code** (`codegen.reloc`): Object file format
-4. **Absolute Machine Code** (`codegen.abs`): Executable format
 
 **Test Results**:
 - **Total Pass Tests**: 55/55 (100% pass rate)
@@ -312,8 +285,6 @@ _testAdd_END:
   - `symbol_table.txt`: Symbol table dump
   - `codegen.ir`: Intermediate representation
   - `codegen.asm`: Assembly code
-  - `codegen.reloc`: Relocatable machine code
-  - `codegen.abs`: Absolute machine code
 
 **Test Results Summary**:
 
@@ -346,7 +317,7 @@ The compiler successfully implements:
 - ✅ 100% test coverage of all grammar rules
 - ✅ Stack-based memory management with proper frame layout
 - ✅ Register allocation with callee-saved tracking
-- ✅ Multiple code generation phases (IR, Assembly, Relocatable, Absolute)
+- ✅ Multiple code generation phases (IR, Assembly)
 
 All requirements have been met and verified through comprehensive automated testing.
 

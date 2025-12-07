@@ -8,7 +8,7 @@ The compiler follows a traditional multi-phase architecture:
 1. **Lexical Analysis** (Tokenization)
 2. **Syntax Analysis** (Parsing & AST Construction)
 3. **Semantic Analysis** (Symbol Tables & Type Checking)
-4. **Code Generation** (IR, Assembly, Machine Code)
+4. **Code Generation** (IR, Assembly)
 
 ---
 
@@ -161,8 +161,6 @@ main.c
 **Generated Files:**
 - `codegen.ir` (Intermediate Representation)
 - `codegen.asm` (x86-32 Assembly)
-- `codegen.reloc` (Relocatable Machine Code)
-- `codegen.abs` (Absolute Machine Code)
 
 **Dependencies:**
 - `ast.h` / `ast.c` - AST traversal
@@ -182,12 +180,6 @@ main.c (semanticErrors == 0)
   │
   ├─> codegen_generate()
   │   └─> Generates: codegen.asm
-  │       │
-  │       ├─> codegen_generate_relocatable()
-  │       │   └─> Generates: codegen.reloc
-  │       │
-  │       └─> codegen_generate_absolute()
-  │           └─> Generates: codegen.abs
 ```
 
 ---
@@ -278,43 +270,6 @@ _main:
 
 ---
 
-### 4.3 Relocatable Machine Code Generation
-
-**Function:** `codegen_generate_relocatable(const char *asmPath, const char *outPath)`
-
-**Process:**
-1. Reads assembly file (`codegen.asm`)
-2. Parses assembly instructions
-3. Estimates instruction sizes
-4. Generates relocatable object format:
-   - Code section with addresses
-   - Relocation table (symbols requiring relocation)
-   - Symbol table (function entry points)
-
-**Output:** `codegen.reloc` - Relocatable object file format
-
-**Purpose:** Can be linked with other object files (not implemented in full)
-
----
-
-### 4.4 Absolute Machine Code Generation
-
-**Function:** `codegen_generate_absolute(const char *asmPath, const char *outPath)`
-
-**Process:**
-1. Reads assembly file (`codegen.asm`)
-2. Parses assembly instructions
-3. Assigns fixed memory addresses (starting at 0x00401000)
-4. Generates absolute executable format:
-   - Code section with resolved addresses
-   - Symbol table with absolute addresses
-
-**Output:** `codegen.abs` - Absolute machine code with fixed addresses
-
-**Purpose:** Ready-to-execute code (simplified format)
-
----
-
 ## Supporting Data Structures
 
 ### AST (Abstract Syntax Tree)
@@ -383,8 +338,6 @@ main.c
 | `symbol_table.txt` | `symbol_table.c` | Semantic | Symbol table dump |
 | `codegen.ir` | `codegen.c` | Code Gen | Intermediate Representation |
 | `codegen.asm` | `codegen.c` | Code Gen | x86-32 Assembly |
-| `codegen.reloc` | `codegen.c` | Code Gen | Relocatable Machine Code |
-| `codegen.abs` | `codegen.c` | Code Gen | Absolute Machine Code |
 
 ---
 
@@ -455,8 +408,6 @@ User runs: ./compiler program.src
 5. codegen.c generates:
    - codegen.ir (3-address code)
    - codegen.asm (assembly)
-   - codegen.reloc (relocatable)
-   - codegen.abs (absolute)
 6. All output files written
 7. Compiler exits
 ```

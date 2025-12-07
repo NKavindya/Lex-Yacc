@@ -15,14 +15,6 @@
  *    - handles function prologues/epilogues
  *    - generates code for: expressions, statements, function calls, control flow
  * 
- * 3. relocatable machine code:
- *    - assembles assembly into relocatable object file format
- *    - can be linked with other object files
- * 
- * 4. absolute machine code:
- *    - assembles assembly into absolute executable format
- *    - fixed memory addresses (ready to execute)
- * 
  * architecture: x86-32 (32-bit x86)
  * - word size: 4 bytes
  * - stack grows downward
@@ -942,104 +934,6 @@ int codegen_generate_ir(AST *root, SymTable *global, const char *outPath) {
         }
     }
 
-    fclose(out);
-    return 0;
-}
-
-/* machine code generation (relocatable and absolute) */
-
-int codegen_generate_relocatable(const char *asmPath, const char *outPath) {
-    FILE *in = fopen(asmPath, "r");
-    if (!in) return 1;
-    
-    FILE *out = fopen(outPath, "w");
-    if (!out) {
-        fclose(in);
-        return 1;
-    }
-
-    fprintf(out, "RELOCATABLE_OBJECT\n");
-    fprintf(out, "FORMAT_VERSION: 1.0\n");
-    fprintf(out, "ARCHITECTURE: x86-32\n");
-    fprintf(out, "WORD_SIZE: 4\n\n");
-    fprintf(out, "CODE_SECTION:\n");
-
-    char line[256];
-    int address = 0;
-    
-    /* simple parsing: collect labels and estimate instruction sizes */
-    while (fgets(line, sizeof(line), in)) {
-        if (line[0] == ';' || line[0] == '\n') continue;
-        if (strstr(line, ":")) {
-            fprintf(out, "  0x%04X: %s", address, line);
-            continue;
-        }
-        if (strstr(line, "mov") || strstr(line, "add") || strstr(line, "sub"))
-            address += 3;  /* typical x86 instruction size */
-        else if (strstr(line, "push") || strstr(line, "pop"))
-            address += 1;
-        else if (strstr(line, "call") || strstr(line, "jmp") || strstr(line, "jz"))
-            address += 5;  /* call/jump with relocatable address */
-        else if (strstr(line, "ret"))
-            address += 1;
-        else
-            address += 2;
-    }
-    
-    fprintf(out, "\nRELOCATION_TABLE:\n");
-    fprintf(out, "  ; Symbols requiring relocation\n");
-    
-    fprintf(out, "\nSYMBOL_TABLE:\n");
-    fprintf(out, "  ; Function entry points\n");
-    
-    fclose(in);
-    fclose(out);
-    return 0;
-}
-
-int codegen_generate_absolute(const char *asmPath, const char *outPath) {
-    FILE *in = fopen(asmPath, "r");
-    if (!in) return 1;
-    
-    FILE *out = fopen(outPath, "w");
-    if (!out) {
-        fclose(in);
-        return 1;
-    }
-
-    fprintf(out, "ABSOLUTE_OBJECT\n");
-    fprintf(out, "FORMAT_VERSION: 1.0\n");
-    fprintf(out, "ARCHITECTURE: x86-32\n");
-    fprintf(out, "LOAD_ADDRESS: 0x00401000\n\n");
-    fprintf(out, "CODE_SECTION:\n");
-
-    char line[256];
-    int baseAddress = 0x00401000;
-    int address = baseAddress;
-    
-    while (fgets(line, sizeof(line), in)) {
-        if (line[0] == ';' || line[0] == '\n') continue;
-        if (strstr(line, ":")) {
-            fprintf(out, "  0x%08X: %s", address, line);
-            continue;
-        }
-        fprintf(out, "  0x%08X: %s", address, line);
-        if (strstr(line, "mov") || strstr(line, "add") || strstr(line, "sub"))
-            address += 3;
-        else if (strstr(line, "push") || strstr(line, "pop"))
-            address += 1;
-        else if (strstr(line, "call") || strstr(line, "jmp") || strstr(line, "jz"))
-            address += 5;
-        else if (strstr(line, "ret"))
-            address += 1;
-        else
-            address += 2;
-    }
-    
-    fprintf(out, "\nSYMBOL_TABLE:\n");
-    fprintf(out, "  ; Resolved function addresses\n");
-    
-    fclose(in);
     fclose(out);
     return 0;
 }

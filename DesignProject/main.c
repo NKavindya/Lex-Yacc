@@ -5,7 +5,7 @@
  * 1. lexical analysis (tokenization)
  * 2. syntax analysis (parsing and AST construction)
  * 3. semantic analysis (symbol table building and type checking)
- * 4. code generation (IR, assembly, and machine code)
+ * 4. code generation (IR and assembly)
  */
 
 #include <stdio.h>      // standard i/o functions (printf, fprintf, fopen, etc.)
@@ -159,18 +159,6 @@ int main(int argc, char **argv) {
         // uses symbol table for variable offsets and function information
         if (codegen_generate(astRoot, globalTable, "codegen.asm") == 0) {
             printf("Assembly code written to codegen.asm\n");
-            
-            // generate relocatable machine code from assembly
-            // relocatable code can be loaded at any memory address
-            if (codegen_generate_relocatable("codegen.asm", "codegen.reloc") == 0) {
-                printf("Relocatable machine code written to codegen.reloc\n");
-            }
-            
-            // generate absolute machine code from assembly
-            // absolute code has fixed memory addresses
-            if (codegen_generate_absolute("codegen.asm", "codegen.abs") == 0) {
-                printf("Absolute machine code written to codegen.abs\n");
-            }
         } else {
             fprintf(stderr, "Code generation failed.\n");
         }
@@ -187,7 +175,7 @@ int main(int argc, char **argv) {
     // print summary of output files generated
     printf("Done. See lexer_tokens.txt, lexer_symbols.txt, semantic_errors.txt, symbol_table.txt");
     if (semanticErrors == 0) {
-        printf(", codegen.ir, codegen.asm, codegen.reloc, codegen.abs");
+        printf(", codegen.ir, codegen.asm");
     }
     printf("\n");
     return 0;  // success

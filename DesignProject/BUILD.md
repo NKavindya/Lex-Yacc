@@ -48,6 +48,4 @@ The compiler generates:
 - `symbol_table.txt` - symbol table dump
 - `codegen.ir` - intermediate representation
 - `codegen.asm` - x86-32 assembly code
-- `codegen.reloc` - relocatable machine code
-- `codegen.abs` - absolute machine code
 

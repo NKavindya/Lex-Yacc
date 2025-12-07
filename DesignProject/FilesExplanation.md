@@ -15,7 +15,7 @@ This document provides a comprehensive overview of all files in the DesignProjec
 - Initializes lexer support structures
 - Opens source file and invokes parser
 - Performs semantic analysis (Pass A: symbol table building, Pass B: type checking)
-- Generates code (IR, assembly, machine code) if no errors
+- Generates code (IR, assembly) if no errors
 - Writes output files (derivation steps, symbol table, errors, tokens, etc.)
 
 **Why we need it**: Coordinates all compiler phases and manages the compilation pipeline from source code to executable code.
@@ -29,8 +29,6 @@ This document provides a comprehensive overview of all files in the DesignProjec
 - `lexer_errors.txt`: Lexical errors
 - `codegen.ir`: Intermediate representation (3-address code)
 - `codegen.asm`: x86-32 assembly code
-- `codegen.reloc`: Relocatable machine code
-- `codegen.abs`: Absolute machine code
 
 ---
 
@@ -200,7 +198,7 @@ This document provides a comprehensive overview of all files in the DesignProjec
 #### `codegen.h`
 **Purpose**: Code generation function prototypes  
 **What it does**:
-- Declares functions for generating IR, assembly, and machine code
+- Declares functions for generating IR and assembly code
 - Provides interface for code generation from AST
 
 **Why we need it**: Provides interface for code generation phase.
@@ -216,7 +214,6 @@ This document provides a comprehensive overview of all files in the DesignProjec
   - Register allocation (EAX, EBX, ECX, EDX, ESI, EDI)
   - Stack frame management (parameters at EBP+8, locals at EBP-offset)
   - Code for expressions, statements, function calls, control flow
-- **Machine Code Generation**: Assembles assembly into relocatable and absolute formats
 
 **Why we need it**: Translates AST into executable code. This is the final phase of compilation.
 
@@ -229,8 +226,6 @@ This document provides a comprehensive overview of all files in the DesignProjec
 **Output files**:
 - `codegen.ir`: Intermediate representation (3-address code)
 - `codegen.asm`: x86-32 assembly code
-- `codegen.reloc`: Relocatable machine code (object file format)
-- `codegen.abs`: Absolute machine code (executable format)
 
 ---
 
@@ -360,8 +355,6 @@ These files are generated when the compiler runs on a source file:
 ### Code Generation Output
 - `codegen.ir`: Intermediate representation (3-address code)
 - `codegen.asm`: x86-32 assembly code
-- `codegen.reloc`: Relocatable machine code (object file format)
-- `codegen.abs`: Absolute machine code (executable format)
 
 ---
 
@@ -382,9 +375,9 @@ Source Code (.src)
     |  Pass B: Type checking
     v
 [Code Generation] (codegen.c)
-    |  Generates IR, Assembly, Machine Code
+    |  Generates IR, Assembly
     v
-Executable Code
+Assembly Code
 ```
 
 ### Data Flow
@@ -393,7 +386,7 @@ Executable Code
 2. **Tokens** → `parser.y` → **AST**
 3. **AST** → `semantic.c` (Pass A) → **Symbol Tables**
 4. **AST + Symbol Tables** → `semantic.c` (Pass B) → **Validated AST**
-5. **AST + Symbol Tables** → `codegen.c` → **IR → Assembly → Machine Code**
+5. **AST + Symbol Tables** → `codegen.c` → **IR → Assembly**
 
 ---
 
@@ -435,9 +428,9 @@ This compiler project implements a complete compiler for a custom programming la
 1. **Lexical Analysis**: Tokenizes source code (`scanner.l`)
 2. **Syntax Analysis**: Parses tokens and builds AST (`parser.y`)
 3. **Semantic Analysis**: Type checking and validation (`semantic.c`)
-4. **Code Generation**: Generates IR, assembly, and machine code (`codegen.c`)
+4. **Code Generation**: Generates IR and assembly code (`codegen.c`)
 
-All components work together to transform source code into executable machine code, with comprehensive error reporting and debugging support through various output files.
+All components work together to transform source code into assembly code, with comprehensive error reporting and debugging support through various output files.
 
 
 

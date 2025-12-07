@@ -185,7 +185,6 @@ All 30 pass test files have been verified to:
 2. ✅ Pass parsing (AST built successfully)
 3. ✅ Pass semantic analysis (no semantic errors)
 4. ✅ Generate valid x86 assembly code
-5. ✅ Produce relocatable and absolute machine code
 
 ### Error Tests Verification
 All 16 error test files have been verified to:
